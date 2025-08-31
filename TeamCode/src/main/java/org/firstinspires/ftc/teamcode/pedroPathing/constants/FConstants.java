@@ -1,10 +1,14 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.constants;
 
+import com.arcrobotics.ftclib.hardware.SimpleServo;
+import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.pedropathing.localization.Localizers;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.util.CustomFilteredPIDFCoefficients;
 import com.pedropathing.util.CustomPIDFCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
+
 
 public class FConstants {
     static {
@@ -16,8 +20,8 @@ public class FConstants {
         FollowerConstants.rightRearMotorName = "BR";
 
         FollowerConstants.leftFrontMotorDirection = DcMotorSimple.Direction.REVERSE;
-        FollowerConstants.leftRearMotorDirection = DcMotorSimple.Direction.REVERSE;
-        FollowerConstants.rightFrontMotorDirection = DcMotorSimple.Direction.FORWARD;
+        FollowerConstants.leftRearMotorDirection = DcMotorSimple.Direction.FORWARD;
+        FollowerConstants.rightFrontMotorDirection = DcMotorSimple.Direction.REVERSE;
         FollowerConstants.rightRearMotorDirection = DcMotorSimple.Direction.FORWARD;
 
         FollowerConstants.mass = 13;
