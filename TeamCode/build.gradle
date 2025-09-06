@@ -1,4 +1,4 @@
-//
+    //
 // build.gradle in TeamCode
 //
 // Most of the definitions for building your module reside in a common, shared
@@ -37,7 +37,7 @@ dependencies {
     implementation "com.acmerobotics.roadrunner:core:1.0.1"
     implementation "com.acmerobotics.roadrunner:actions:1.0.1"
     implementation "com.acmerobotics.dashboard:dashboard:0.4.17"
-
+    implementation 'com.github.FTCLib:FTCLib:v2.1.1'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.7'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.4.21'
 }
