@@ -68,7 +68,23 @@ import java.util.List;
 @TeleOp(name = "Sensor: Limelight3A", group = "Sensor")
 public class SensorLimelight3A extends LinearOpMode {
 
+    // Angle of the camera relative to the floor in degrees.
+    // This value needs to be tuned for your specific robot.
+    private static final double LIMELIGHT_MOUNT_ANGLE_DEGREES = 25.0;
+
+    // Height of the Limelight lens from the floor in inches.
+    // This value needs to be tuned for your specific robot.
+    private static final double LIMELIGHT_LENS_HEIGHT_INCHES = 20.0;
+
+    // Height of the AprilTag from the floor in inches.
+    // This value needs to be tuned for your specific robot and the target AprilTag.
+    private static final double APRILTAG_HEIGHT_INCHES = 10.0;
+
     private Limelight3A limelight;
+
+    // Variables to store the calculated distance and angle
+    private double distanceToAprilTag;
+    private double angleToAprilTag;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -136,8 +152,28 @@ public class SensorLimelight3A extends LinearOpMode {
 
                     // Access fiducial results
                     List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
-                    for (LLResultTypes.FiducialResult fr : fiducialResults) {
-                        telemetry.addData("Fiducial", "ID: %d, Family: %s, X: %.2f, Y: %.2f", fr.getFiducialId(), fr.getFamily(),fr.getTargetXDegrees(), fr.getTargetYDegrees());
+                    if (fiducialResults.size() > 0) {
+                        for (LLResultTypes.FiducialResult fr : fiducialResults) {
+                            telemetry.addData("Fiducial", "ID: %d, Family: %s, X: %.2f, Y: %.2f", fr.getFiducialId(), fr.getFamily(),fr.getTargetXDegrees(), fr.getTargetYDegrees());
+
+                            // Get the horizontal and vertical angles to the target
+                            double tx = fr.getTargetXDegrees();
+                            double ty = fr.getTargetYDegrees();
+
+                            // Store the horizontal angle
+                            angleToAprilTag = tx;
+
+                            // Calculate the distance to the AprilTag
+                            double angleToGoalDegrees = LIMELIGHT_MOUNT_ANGLE_DEGREES + ty;
+                            double angleToGoalRadians = Math.toRadians(angleToGoalDegrees);
+                            distanceToAprilTag = (APRILTAG_HEIGHT_INCHES - LIMELIGHT_LENS_HEIGHT_INCHES) / Math.tan(angleToGoalRadians);
+
+                            // Display the data on the telemetry
+                            telemetry.addData("Distance to AprilTag", "%.2f inches", distanceToAprilTag);
+                            telemetry.addData("Angle to AprilTag", "%.2f degrees", angleToAprilTag);
+                        }
+                    } else {
+                        telemetry.addData("AprilTag", "No AprilTag detected");
                     }
 
                     // Access color results
