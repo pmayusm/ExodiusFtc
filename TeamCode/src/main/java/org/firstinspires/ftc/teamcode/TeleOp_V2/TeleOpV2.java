@@ -117,6 +117,12 @@ public class TeleOpV2  extends LinearOpMode {
 
             //start tele here
 
+            if (gamepad1Ex.getButton(GamepadKeys.Button.A))
+            {
+                robot.FrontLeft.set(1);
+            };
+
+
 
 
            // telemetry.addData("Extension Position Variable", extpos);
