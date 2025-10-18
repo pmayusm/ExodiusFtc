@@ -20,19 +20,20 @@ public class Constants {
 
     // strafer chassis with battery and pinpoint + 2 odo wheels is 5.35239 kg
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(3)
+            .forwardPodY(-.13)
             .strafePodX(-6.5)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("pinpoint")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
-            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
-            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
 
 
     public static MecanumConstants driveConstants = new MecanumConstants()
-            .xVelocity(62.65155509888657)
-            .yVelocity(56.53546334814838)
+            .xVelocity(51.3952377199188)
+            .yVelocity(44.65486349271038)
+
             .maxPower(1)
             .rightFrontMotorName("FR")
             .rightRearMotorName("BR")
@@ -46,11 +47,13 @@ public class Constants {
 
 
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .forwardZeroPowerAcceleration(-41.40408164992108)
-            .lateralZeroPowerAcceleration(-60.68629234118038)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.15, 0, 0.015, 0.02))
-            .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0.04, 0.01))
-            .mass(5.4);
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.09, 0.0, 0.006, 0.025))
+            .headingPIDFCoefficients(new PIDFCoefficients(0.8, 0, 0.01, 0.01))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.025, 0, 0.0005, 0.6, 0.01))
+            .centripetalScaling(0.0008)
+            .forwardZeroPowerAcceleration(-45.294273315617126)
+            .lateralZeroPowerAcceleration(-70.7163112183693)
+            .mass(6.078138);
 
 
 

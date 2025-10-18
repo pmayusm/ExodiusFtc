@@ -52,57 +52,15 @@ public class RobotV2 {
     }
 }
 
-// Control Hub
-// Motors:
-//  0: FL - Front Left
-//  1: BL - Back Left
-//  2: LiftLeft
-// Servo:
-//  0: ExtL - Extension Left
-//  1: ICoax - Intake Coaxial 4 Bar
-//  2: IRot - Intake Rotation
-//  3: OLW - Outtake Left Wrist
-//  4: OLA - Outtake Left Arm
-//  5: OCLaw - Outtake Claw
 
-// Expansion Hub
-// Motors:
-//  0: FR - Front Right
-//  1: BR - Back Right
-//  2: LiftRight
-// Servo:
-//  0: ORA - Outtake Right Arm
-//  1: ORot - Outtake Rotation
-//  2: ORW - Outtake Right Wrist
-//  3: IClaw - Intake Claw
-//  4: IV4B - Intake Virtual 4 Bar
-//  5: ExtR - Extension Right
 
-/* NEW CONFIG(regionals)
-CH:
-    Motors:
-        0: FR
-        1: BR
-        2: FL
-        3: Bl
-    Servos:
-        0:OLA
-        1:Orot
-        2:Oclaw
-        3:OLW
-        4:ORW
-        5:ORA
-EH:
-    Motors:
-        2:LiftRight
-        3:LiftLeft
-    Servos:
-        0:ICoax
-        1:Iclaw
-        2:ExtL
-        3:ExtR
-        4:IV4B
-        5:Irot
+/*
+config(10/17/2025):
+0:BL
+1:FL
+2:BR
+3:FR
+
 
 
 
