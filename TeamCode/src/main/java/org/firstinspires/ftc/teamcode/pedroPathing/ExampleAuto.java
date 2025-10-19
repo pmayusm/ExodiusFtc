@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.pedroPathing; // make sure this aligns with class location
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.eventloop.EventLoop;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -13,38 +15,58 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name = "Example Auto", group = "Examples")
 public class ExampleAuto extends OpMode {
-    ElapsedTime shreyastime = new ElapsedTime();
+
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
 
     private int pathState;
-    private final Pose startPose = new Pose(22.5, 125.72, Math.toRadians(323)); // Start Pose of our robot.
-    private final Pose scorePose = new Pose(51, 84, Math.toRadians(315)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose pickup1Pose = new Pose(51, 83, Math.toRadians(180)); // Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose startPose = new Pose(21, 123, Math.toRadians(323)); // Start Pose of our robot.
+    private final Pose scorePose1 = new Pose(59, 85, Math.toRadians(315)); // Scoring Pose at big triangle
+    private final Pose pickup1Pose = new Pose(50, 84, Math.toRadians(180)); // preparing to intake first set of balls
 
-    private final Pose picking = new Pose(20.8, 82.5, Math.toRadians(180));
+    private final Pose picking = new Pose(21, 84, Math.toRadians(180)); // intaking first set of balls
+
+    private final Pose scorePose2 = new Pose(61, 14, Math.toRadians(298));  // score pose from small triangle
+
+    private final Pose humanintake = new Pose(125, 12, Math.toRadians(180)); // spot where robot takes balls from human player in observation zone
 
     private Path scorePreload;
-    private PathChain grabPickup1, pick;
+    private PathChain prepare1, pickup1, score2, pickup2;
+
+    private ElapsedTime TimePassed = new ElapsedTime();
 
     public void buildPaths() {
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
-        scorePreload = new Path(new BezierLine(startPose, scorePose));
-        scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
+        scorePreload = new Path(new BezierLine(startPose, scorePose1));
+        scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose1.getHeading());
+        scorePreload.setTimeoutConstraint(2);
 
     /* Here is an example for Constant Interpolation
     scorePreload.setConstantInterpolation(startPose.getHeading()); */
 
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-        grabPickup1 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, pickup1Pose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
+        prepare1 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose1, pickup1Pose))
+                .setLinearHeadingInterpolation(scorePose1.getHeading(), pickup1Pose.getHeading())
                 .build();
 
-        pick = follower.pathBuilder()
+        pickup1 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup1Pose, picking))
-                .setConstantHeadingInterpolation(pickup1Pose.getHeading())
+                .setConstantHeadingInterpolation(picking.getHeading())
+                .setTimeoutConstraint(1)
                 .build();
+
+        score2 = follower.pathBuilder()
+                .addPath(new BezierCurve(picking, new Pose(63, 90), scorePose2))
+                .setLinearHeadingInterpolation(picking.getHeading(), scorePose2.getHeading())
+                .setTimeoutConstraint(1)
+                .build();
+        pickup2 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose2, humanintake))
+                .setLinearHeadingInterpolation(scorePose2.getHeading(), humanintake.getHeading())
+                .setTimeoutConstraint(1)
+                .build();
+
 
         /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
 
@@ -54,23 +76,40 @@ public class ExampleAuto extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-
-                follower.followPath(scorePreload);
+                follower.followPath(scorePreload, false);
+                TimePassed.reset();
                 setPathState(1);
-                shreyastime.reset();
                 break;
 
             case 1:
-
-                follower.followPath(grabPickup1, true);
-                setPathState(2);
-                shreyastime.reset();
-                break;
-            case 2:
-                if (!follower.isBusy()){
-                    follower.followPath(pick);
+                if(!follower.isBusy()) {
+                    if(pathTimer.getElapsedTimeSeconds()>2) {
+                        telemetry.addData("path 1", true);
+                        follower.followPath(prepare1, false);
+                        setPathState(2);
+                    }
                     break;
                 }
+
+            case 2:
+                if (!follower.isBusy()){
+                    follower.followPath(pickup1, false);
+                    setPathState(3);
+                    break;
+                }
+            case 3:
+                if (!follower.isBusy()){
+                    follower.followPath(score2, false);
+                    setPathState(4);
+                    break;
+                }
+                break;
+            case 4:
+                if (!follower.isBusy()) {
+                    follower.followPath(pickup2, false);
+                    break;
+                }
+
 
 
 //
