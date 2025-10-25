@@ -7,6 +7,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.Shooter;
+import org.firstinspires.ftc.teamcode.pedroPathing.Intake;
+
 
 
 @TeleOp(name = "TeleOp V2")
@@ -15,11 +18,6 @@ public class TeleOpV2  extends LinearOpMode {
     static GamepadEx gamepad1Ex;
     static GamepadEx gamepad2Ex;
     static RobotV2 robot;
-
-
-
-
-
 
 
 //    private ColorSensor colorSensor;;
