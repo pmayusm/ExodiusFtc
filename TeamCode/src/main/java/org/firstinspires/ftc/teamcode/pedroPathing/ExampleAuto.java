@@ -12,12 +12,20 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import dev.nextftc.core.commands.Command;
+import dev.nextftc.core.commands.CommandManager;
+import dev.nextftc.core.commands.groups.ParallelGroup;
+
+
 
 @Autonomous(name = "Example Auto", group = "Examples")
 public class ExampleAuto extends OpMode {
-
+    private SubSystem COMMANDS;
+    private Command shooterintakeParallel;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
+
+
 
     private int pathState;
     private final Pose startPose = new Pose(21, 123, Math.toRadians(323)); // Start Pose of our robot.
@@ -83,6 +91,10 @@ public class ExampleAuto extends OpMode {
 
             case 1:
                 if(!follower.isBusy()) {
+                    shooterintakeParallel = new ParallelGroup(
+                            COMMANDS.getShooterCommand(),
+                            COMMANDS.getIntakeCommand()
+                    );
                     if(pathTimer.getElapsedTimeSeconds()>2) {
                         telemetry.addData("path 1", true);
                         follower.followPath(prepare1, false);
@@ -99,6 +111,7 @@ public class ExampleAuto extends OpMode {
                 }
             case 3:
                 if (!follower.isBusy()){
+                    shooterintakeParallel.cancel();
                     follower.followPath(score2, false);
                     setPathState(4);
                     break;

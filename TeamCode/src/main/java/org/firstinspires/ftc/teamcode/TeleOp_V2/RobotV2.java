@@ -11,6 +11,7 @@ public class RobotV2 {
     public MotorEx FrontRight;
     public MotorEx BackLeft;
     public MotorEx BackRight;
+    public MotorEx Shooter;
 
 
 
@@ -44,6 +45,9 @@ public class RobotV2 {
         BackRight = new MotorEx(hwMap, "BR", Motor.GoBILDA.RPM_435);
         BackRight.setInverted(true);
         BackRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+
+        Shooter = new MotorEx(hwMap, "SH", Motor.GoBILDA.RPM_1620);
+        Shooter.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
 
 
