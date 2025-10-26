@@ -82,6 +82,7 @@ public class TeleOpV2  extends LinearOpMode {
         //colorTelemetry();
 
         while (opModeIsActive()) {
+            robot.Shooter.set(gamepad2Ex.getLeftY() * 0.7);
             drive.driveRobotCentric(
                     gamepad1Ex.getLeftX(),
                     gamepad1Ex.getLeftY(),

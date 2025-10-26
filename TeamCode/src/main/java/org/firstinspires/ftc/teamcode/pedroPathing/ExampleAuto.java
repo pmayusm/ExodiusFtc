@@ -7,6 +7,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.eventloop.EventLoop;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -16,16 +17,13 @@ import dev.nextftc.core.commands.CommandManager;
 import dev.nextftc.core.commands.groups.ParallelGroup;
 
 
+
 @Autonomous(name = "Example Auto", group = "Examples")
 public class ExampleAuto extends OpMode {
-
+    private SubSystem COMMANDS;
+    private Command shooterintakeParallel;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
-
-    private Intake shooter;
-    private Intake intake;
-    private Command shooterIntakeParallel;
-
 
 
 
@@ -83,39 +81,21 @@ public class ExampleAuto extends OpMode {
 
     }
 
-
-
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
                 follower.followPath(scorePreload, false);
-
-
-                // Start shooter + intake only once after path finishes
-                if (!follower.isBusy() && shooterIntakeParallel == null) {
-                    shooterIntakeParallel = new ParallelGroup(
-                            shooter.getCommand(),
-                            intake.getCommand()
-                    );
-                    CommandManager.INSTANCE.scheduleCommand(shooterIntakeParallel);
-                    actionTimer.resetTimer(); // start timer
-                }
-
-
-
-
-                // Stop shooter + intake after 2 seconds
-                if (shooterIntakeParallel != null && actionTimer.getElapsedTime() > 2.0) {
-                    shooterIntakeParallel.cancel();
-                    shooterIntakeParallel = null; // reset for next use
-                    setPathState(1); // go to next path
-                }
+                TimePassed.reset();
+                setPathState(1);
                 break;
 
             case 1:
                 if(!follower.isBusy()) {
+                    shooterintakeParallel = new ParallelGroup(
+                            COMMANDS.getShooterCommand(),
+                            COMMANDS.getIntakeCommand()
+                    );
                     if(pathTimer.getElapsedTimeSeconds()>2) {
-                        shooterIntakeParallel.cancel();
                         telemetry.addData("path 1", true);
                         follower.followPath(prepare1, false);
                         setPathState(2);
@@ -131,6 +111,7 @@ public class ExampleAuto extends OpMode {
                 }
             case 3:
                 if (!follower.isBusy()){
+                    shooterintakeParallel.cancel();
                     follower.followPath(score2, false);
                     setPathState(4);
                     break;
