@@ -15,7 +15,7 @@ public class Intake {
     // Constructor: pass in hardwareMap
     public Intake(HardwareMap hardwareMap) {
         // Initialize motor first
-        intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
+        intakeMotor = hardwareMap.get(DcMotorEx.class, "I");
         intakeMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         // LambdaCommand that runs until manually stopped

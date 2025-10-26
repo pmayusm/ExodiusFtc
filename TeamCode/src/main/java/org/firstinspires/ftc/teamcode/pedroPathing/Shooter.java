@@ -15,7 +15,7 @@ public class Shooter {
     // Constructor: pass in hardwareMap
     public Shooter(HardwareMap hardwareMap) {
         // Initialize motor first
-        shooterMotor = hardwareMap.get(DcMotorEx.class, "shooterMotor");
+        shooterMotor = hardwareMap.get(DcMotorEx.class, "SH");
         shooterMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         // LambdaCommand that runs until manually stopped
