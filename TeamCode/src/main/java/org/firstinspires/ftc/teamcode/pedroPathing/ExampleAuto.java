@@ -8,17 +8,30 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.CommandManager;
 import dev.nextftc.core.commands.groups.ParallelGroup;
 
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+
+import java.util.List;
+import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
+
 
 @Autonomous(name = "Example Auto", group = "Examples")
 public class ExampleAuto extends OpMode {
+    private double convertx = 0;
 
+    private double converty = 0;
+    private LimelightSubsystem limelight;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
 
@@ -30,6 +43,7 @@ public class ExampleAuto extends OpMode {
 
 
     private int pathState;
+
     private final Pose startPose = new Pose(21, 123, Math.toRadians(323)); // Start Pose of our robot.
     private final Pose scorePose1 = new Pose(59, 85, Math.toRadians(315)); // Scoring Pose at big triangle
     private final Pose pickup1Pose = new Pose(50, 84, Math.toRadians(180)); // preparing to intake first set of balls
@@ -45,11 +59,19 @@ public class ExampleAuto extends OpMode {
 
     private ElapsedTime TimePassed = new ElapsedTime();
 
+    public void ConvertCoordinates(){
+        if (limelight.isTargetFound()){
+            converty = (39.3701 * limelight.getBotposeX()) +  72;
+            convertx = (39.3701 * limelight.getBotposeZ()) + 72;
+        }
+    }
+
     public void buildPaths() {
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
         scorePreload = new Path(new BezierLine(startPose, scorePose1));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose1.getHeading());
         scorePreload.setTimeoutConstraint(2);
+
 
     /* Here is an example for Constant Interpolation
     scorePreload.setConstantInterpolation(startPose.getHeading()); */
@@ -86,32 +108,13 @@ public class ExampleAuto extends OpMode {
 
 
     public void autonomousPathUpdate() {
+        follower.update();
         switch (pathState) {
             case 0:
                 follower.followPath(scorePreload, false);
-
-
-                // Start shooter + intake only once after path finishes
-                if (!follower.isBusy() && shooterIntakeParallel == null) {
-                    shooterIntakeParallel = new ParallelGroup(
-                            shooter.getCommand(),
-                            intake.getCommand()
-                    );
-                    CommandManager.INSTANCE.scheduleCommand(shooterIntakeParallel);
-                    actionTimer.resetTimer(); // start timer
-                }
-
-
-
-
-                // Stop shooter + intake after 2 seconds
-                if (shooterIntakeParallel != null && actionTimer.getElapsedTime() > 2.0) {
-                    shooterIntakeParallel.cancel();
-                    shooterIntakeParallel = null; // reset for next use
-                    setPathState(1); // go to next path
-                }
+                telemetry.addData("pos", follower.getPose());
+                telemetry.update();
                 break;
-
             case 1:
                 if(!follower.isBusy()) {
                     if(pathTimer.getElapsedTimeSeconds()>2) {
@@ -187,6 +190,7 @@ public class ExampleAuto extends OpMode {
      **/
     @Override
     public void loop() {
+        limelight = new LimelightSubsystem(hardwareMap, 20);
 
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();

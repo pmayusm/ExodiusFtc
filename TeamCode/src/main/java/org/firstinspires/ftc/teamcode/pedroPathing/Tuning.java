@@ -1,25 +1,20 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.changes;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.drawOnlyCurrent;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.draw;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.stopRobot;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.telemetryM;
 
+import com.bylazar.configurables.PanelsConfigurables;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.configurables.annotations.IgnoreConfigurable;
-import com.bylazar.configurables.PanelsConfigurables;
 import com.bylazar.field.FieldManager;
 import com.bylazar.field.PanelsField;
 import com.bylazar.field.Style;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
-
-
-
-import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.changes;
-import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.drawCurrent;
-import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.drawCurrentAndHistory;
-import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
-import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.stopRobot;
-import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.telemetryM;
-
-
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.*;
 import com.pedropathing.math.*;
@@ -94,12 +89,14 @@ public class Tuning extends SelectableOpMode {
         poseHistory = follower.getPoseHistory();
 
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+
+        Drawing.init();
     }
 
     @Override
     public void onLog(List<String> lines) {}
 
-    public static void drawCurrent() {
+    public static void drawOnlyCurrent() {
         try {
             Drawing.drawRobot(follower.getPose());
             Drawing.sendPacket();
@@ -108,9 +105,8 @@ public class Tuning extends SelectableOpMode {
         }
     }
 
-    public static void drawCurrentAndHistory() {
-        Drawing.drawPoseHistory(poseHistory);
-        drawCurrent();
+    public static void draw() {
+        Drawing.drawDebug(follower);
     }
 
     /** This creates a full stop of the robot by setting the drive motors to run at 0 power. */
@@ -140,7 +136,7 @@ class LocalizationTest extends OpMode {
                 + "allowing robot control through a basic mecanum drive on gamepad 1.");
         telemetryM.update(telemetry);
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     @Override
@@ -164,7 +160,7 @@ class LocalizationTest extends OpMode {
         telemetryM.debug("total heading:" + follower.getTotalHeading());
         telemetryM.update(telemetry);
 
-        drawCurrentAndHistory();
+        draw();
     }
 }
 
@@ -187,7 +183,7 @@ class ForwardTuner extends OpMode {
     @Override
     public void init() {
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     /** This initializes the PoseUpdater as well as the Panels telemetry. */
@@ -195,7 +191,7 @@ class ForwardTuner extends OpMode {
     public void init_loop() {
         telemetryM.debug("Pull your robot forward " + DISTANCE + " inches. Your forward ticks to inches will be shown on the telemetry.");
         telemetryM.update(telemetry);
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     /**
@@ -211,7 +207,7 @@ class ForwardTuner extends OpMode {
         telemetryM.debug("Multiplier: " + (DISTANCE / (follower.getPose().getX() / follower.getPoseTracker().getLocalizer().getForwardMultiplier())));
         telemetryM.update(telemetry);
 
-        drawCurrentAndHistory();
+        draw();
     }
 }
 
@@ -234,7 +230,7 @@ class LateralTuner extends OpMode {
     @Override
     public void init() {
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     /** This initializes the PoseUpdater as well as the Panels telemetry. */
@@ -242,7 +238,7 @@ class LateralTuner extends OpMode {
     public void init_loop() {
         telemetryM.debug("Pull your robot to the right " + DISTANCE + " inches. Your strafe ticks to inches will be shown on the telemetry.");
         telemetryM.update(telemetry);
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     /**
@@ -258,7 +254,7 @@ class LateralTuner extends OpMode {
         telemetryM.debug("Multiplier: " + (DISTANCE / (follower.getPose().getY() / follower.getPoseTracker().getLocalizer().getLateralMultiplier())));
         telemetryM.update(telemetry);
 
-        drawCurrentAndHistory();
+        draw();
     }
 }
 
@@ -281,7 +277,7 @@ class TurnTuner extends OpMode {
     @Override
     public void init() {
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     /** This initializes the PoseUpdater as well as the Panels telemetry. */
@@ -290,7 +286,7 @@ class TurnTuner extends OpMode {
         telemetryM.debug("Turn your robot " + ANGLE + " radians. Your turn ticks to inches will be shown on the telemetry.");
         telemetryM.update(telemetry);
 
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     /**
@@ -306,7 +302,7 @@ class TurnTuner extends OpMode {
         telemetryM.debug("Multiplier: " + (ANGLE / (follower.getTotalHeading() / follower.getPoseTracker().getLocalizer().getTurningMultiplier())));
         telemetryM.update(telemetry);
 
-        drawCurrentAndHistory();
+        draw();
     }
 }
 
@@ -346,7 +342,7 @@ class ForwardVelocityTuner extends OpMode {
         telemetryM.update(telemetry);
 
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     /** This starts the OpMode by setting the drive motors to run forward at full power. */
@@ -374,7 +370,7 @@ class ForwardVelocityTuner extends OpMode {
         }
 
         follower.update();
-        drawCurrentAndHistory();
+        draw();
 
 
         if (!end) {
@@ -454,7 +450,7 @@ class LateralVelocityTuner extends OpMode {
         telemetryM.update(telemetry);
 
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     /** This starts the OpMode by setting the drive motors to run right at full power. */
@@ -481,7 +477,7 @@ class LateralVelocityTuner extends OpMode {
         }
 
         follower.update();
-        drawCurrentAndHistory();
+        draw();
 
         if (!end) {
             if (Math.abs(follower.getPose().getY()) > DISTANCE) {
@@ -553,7 +549,7 @@ class ForwardZeroPowerAccelerationTuner extends OpMode {
         telemetryM.debug("Press B on Gamepad 1 to stop.");
         telemetryM.update(telemetry);
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     /** This starts the OpMode by setting the drive motors to run forward at full power. */
@@ -578,7 +574,7 @@ class ForwardZeroPowerAccelerationTuner extends OpMode {
         }
 
         follower.update();
-        drawCurrentAndHistory();
+        draw();
 
         Vector heading = new Vector(1.0, follower.getPose().getHeading());
         if (!end) {
@@ -655,7 +651,7 @@ class LateralZeroPowerAccelerationTuner extends OpMode {
         telemetryM.debug("Press B on game pad 1 to stop.");
         telemetryM.update(telemetry);
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     /** This starts the OpMode by setting the drive motors to run forward at full power. */
@@ -680,7 +676,7 @@ class LateralZeroPowerAccelerationTuner extends OpMode {
         }
 
         follower.update();
-        drawCurrentAndHistory();
+        draw();
 
         Vector heading = new Vector(1.0, follower.getPose().getHeading() - Math.PI / 2);
         if (!end) {
@@ -749,7 +745,7 @@ class TranslationalTuner extends OpMode {
         telemetryM.debug("You can adjust the PIDF values to tune the robot's translational PIDF(s).");
         telemetryM.update(telemetry);
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     @Override
@@ -767,7 +763,7 @@ class TranslationalTuner extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        drawCurrentAndHistory();
+        draw();
 
         if (!follower.isBusy()) {
             if (forward) {
@@ -816,7 +812,7 @@ class HeadingTuner extends OpMode {
         telemetryM.debug("You can adjust the PIDF values to tune the robot's heading PIDF(s).");
         telemetryM.update(telemetry);
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     @Override
@@ -837,7 +833,7 @@ class HeadingTuner extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        drawCurrentAndHistory();
+        draw();
 
         if (!follower.isBusy()) {
             if (forward) {
@@ -884,14 +880,14 @@ class DriveTuner extends OpMode {
         telemetryM.debug("Make sure you have enough room.");
         telemetryM.update(telemetry);
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     @Override
     public void start() {
         follower.deactivateAllPIDFs();
         follower.activateDrive();
-        
+
         forwards = follower.pathBuilder()
                 .setGlobalDeceleration()
                 .addPath(new BezierLine(new Pose(0,0), new Pose(DISTANCE,0)))
@@ -914,7 +910,7 @@ class DriveTuner extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        drawCurrentAndHistory();
+        draw();
 
         if (!follower.isBusy()) {
             if (forward) {
@@ -959,7 +955,7 @@ class Line extends OpMode {
         telemetryM.debug("You can adjust the PIDF values to tune the robot's drive PIDF(s).");
         telemetryM.update(telemetry);
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     @Override
@@ -976,7 +972,7 @@ class Line extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        drawCurrentAndHistory();
+        draw();
 
         if (!follower.isBusy()) {
             if (forward) {
@@ -1027,7 +1023,7 @@ class CentripetalTuner extends OpMode {
         telemetryM.debug("Make sure you have enough room.");
         telemetryM.update(telemetry);
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     @Override
@@ -1049,7 +1045,7 @@ class CentripetalTuner extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        drawCurrentAndHistory();
+        draw();
         if (!follower.isBusy()) {
             if (forward) {
                 forward = false;
@@ -1088,7 +1084,7 @@ class Triangle extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        drawCurrentAndHistory();
+        draw();
 
         if (follower.atParametricEnd()) {
             follower.followPath(triangle, true);
@@ -1104,7 +1100,7 @@ class Triangle extends OpMode {
         telemetryM.debug("So, make sure you have enough space to the left, front, and right to run the OpMode.");
         telemetryM.update(telemetry);
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     /** Creates the PathChain for the "triangle".*/
@@ -1161,7 +1157,7 @@ class Circle extends OpMode {
         telemetryM.debug("It will also continuously face the center of the circle to test your heading and centripetal correction.");
         telemetryM.update(telemetry);
         follower.update();
-        drawCurrent();
+        drawOnlyCurrent();
     }
 
     @Override
@@ -1174,7 +1170,7 @@ class Circle extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        drawCurrentAndHistory();
+        draw();
 
         if (follower.atParametricEnd()) {
             follower.followPath(circle);
@@ -1188,27 +1184,15 @@ class Circle extends OpMode {
  * @author Lazar - 19234
  * @version 1.1, 5/19/2025
  */
-/**
- * This is the Drawing class. It handles the drawing of stuff on Panels Dashboard, like the robot.
- *
- * @author Lazar - 19234
- * @version 1.1, 5/19/2025
- */
-/**
- * This is the Drawing class. It handles the drawing of stuff on Panels Dashboard, like the robot.
- *
- * @author Lazar - 19234
- * @version 1.1, 5/19/2025
- */
 class Drawing {
     public static final double ROBOT_RADIUS = 9; // woah
     private static final FieldManager panelsField = PanelsField.INSTANCE.getField();
 
     private static final Style robotLook = new Style(
-            "", "#3F51B5", 0.0
+            "", "#3F51B5", 0.75
     );
     private static final Style historyLook = new Style(
-            "", "#4CAF50", 0.0
+            "", "#4CAF50", 0.75
     );
 
     /**
