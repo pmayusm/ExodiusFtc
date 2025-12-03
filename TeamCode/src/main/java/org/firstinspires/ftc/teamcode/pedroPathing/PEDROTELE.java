@@ -25,6 +25,8 @@ public class PEDROTELE extends OpMode {
 
     private boolean automatedDrive;
     private Supplier<PathChain> pathChain;
+    private Supplier<PathChain> NewPathChain;
+
     private TelemetryManager telemetryM;
     private boolean slowMode = false;
     private double slowModeMultiplier = 0.5;
@@ -38,7 +40,7 @@ public class PEDROTELE extends OpMode {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
         pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
-                .addPath(new Path(new BezierLine(follower.getPose(), new Pose(45, 98))))
+                .addPath(new Path(new BezierLine(new Pose(21, 123), new Pose(45, 98))))
                 .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(130))
                 .build();
     }
@@ -54,9 +56,14 @@ public class PEDROTELE extends OpMode {
 
     @Override
     public void loop() {
-        //Call this once per loop
         follower.update();
         telemetryM.update();
+        NewPathChain = () -> follower.pathBuilder() //Lazy Curve Generation
+                .addPath(new Path(new BezierLine(follower.getPose(), new Pose(45, 98))))
+                .setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(130))
+                .build();
+        //Call this once per loop
+
 
         if (!automatedDrive) {
             //Make the last parameter false for field-centric
@@ -83,6 +90,12 @@ public class PEDROTELE extends OpMode {
         if (gamepad1.aWasPressed()) {
             follower.followPath(pathChain.get());
             automatedDrive = true;
+        }
+        if (gamepad1.xWasPressed()){
+            follower.setPose(TESTSTART);
+        }
+        if (gamepad2.xWasPressed()){
+            follower.followPath(NewPathChain.get());
         }
 
         //Stop automated following if the follower is done

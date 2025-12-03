@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.CommandManager;
 import dev.nextftc.core.commands.groups.ParallelGroup;
+import dev.nextftc.extensions.pedro.FollowPath;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -117,12 +118,10 @@ public class ExampleAuto extends OpMode {
                 break;
             case 1:
                 if(!follower.isBusy()) {
-                    if(pathTimer.getElapsedTimeSeconds()>2) {
-                        shooterIntakeParallel.cancel();
-                        telemetry.addData("path 1", true);
-                        follower.followPath(prepare1, false);
-                        setPathState(2);
-                    }
+                    shooterIntakeParallel.cancel();
+                    telemetry.addData("path 1", true);
+                    follower.followPath(prepare1, false);
+                    setPathState(2);
                     break;
                 }
 

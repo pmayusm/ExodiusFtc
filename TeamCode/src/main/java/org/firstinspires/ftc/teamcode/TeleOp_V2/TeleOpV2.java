@@ -44,16 +44,10 @@ import dev.nextftc.core.commands.groups.ParallelGroup;
 
 @TeleOp(name = "TeleOp V2")
 public class TeleOpV2  extends LinearOpMode {
-
+    double denom;
     private LimelightSubsystem limelight;
 
-    private double convertx = 0;
 
-    private double converty = 0;
-    private final Pose scorePose1 = new Pose(59, 85, Math.toRadians(315)); // Scoring Pose at big triangle
-    private Pose startPose = new Pose(21, 123, Math.toRadians(323)); // Start Pose of our robot.
-    private Follower follower;
-    private Path scoring;
 
     // Declare the Limelight subsystem
 
@@ -63,6 +57,35 @@ public class TeleOpV2  extends LinearOpMode {
     static GamepadEx gamepad1Ex;
     static GamepadEx gamepad2Ex;
     static RobotV2 robot;
+
+    private static final double TURRET_POWER_MAX = 1;
+    private static final double TURRET_POWER_MIN = 0.3;
+    private static final double SEARCH_POWER = 0.4;
+
+    // PID Constants for turret aiming
+    private static final double Kp = 0.040; // increase for raster response, decrease if it oscillates
+    private static final double Ki = 0.0001; // increase if it stops early, decrease if it overshoots
+    private static final double Kd = 0.001; // increase to reduce overshoot and oscillation, decrease if its too sluggish in moving
+
+    // PID tracking variables
+    private double integralSum = 0;
+    private double lastError = 0;
+    private ElapsedTime pidTimer = new ElapsedTime();
+
+    // Target tolerance (degrees from center)
+    private static final double TARGET_TOLERANCE = 5.0;
+
+    // Search mode variables
+    private static final double SEARCH_TIMEOUT = 3.0;
+    private double searchTimer = 0;
+    private int searchDirection = 1; // 1 for clockwise, -1 for counter-clockwise
+    private ElapsedTime searchElapsedTimer = new ElapsedTime();
+
+
+    // Control flags
+    private boolean autoTrackingEnabled = false;
+    private boolean lastAState = false;
+    private boolean lastBState = false;
 
 
 
@@ -75,16 +98,6 @@ public class TeleOpV2  extends LinearOpMode {
 //private ColorSensor colorSensor;;
 
 
-    private Timer pathTimer, actionTimer, opmodeTimer;
-    private int pathState;
-
-
-    private Path testpath;
-    private double redValue;
-    private double greenValue;
-    private double blueValue;
-    private double alphaValue; //Light Intensity
-    private double targetValue = 1000;
 
 
 
@@ -110,31 +123,26 @@ public class TeleOpV2  extends LinearOpMode {
 //        telemetry.update();
 //    }
 
-    public void buildPaths(){
-        testpath = new Path(new BezierLine(startPose, scorePose1));
-        testpath.setLinearHeadingInterpolation(startPose.getHeading(), scorePose1.getHeading());
-        testpath.setTimeoutConstraint(2);
-    }
-    public void setPathState(int pState) {
-        pathState = pState;
-        pathTimer.resetTimer();
-    }
+
 
 
 
 
     private void HardwareStart() {
-        follower = Constants.createFollower(hardwareMap);
-        buildPaths();
-        follower.setStartingPose(startPose);
+        //follower = Constants.createFollower(hardwareMap);
+        //follower.setStartingPose(startPose);
         robot = new RobotV2();
         robot.init(hardwareMap);
         drive = new MecanumDrive(robot.FrontLeft, robot.FrontRight, robot.BackLeft, robot.BackRight);
         gamepad1Ex = new GamepadEx(gamepad1);
         gamepad2Ex = new GamepadEx(gamepad2);
-
+        limelight = new LimelightSubsystem(hardwareMap, 20);
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);
+        pidTimer.reset();
+        searchElapsedTimer.reset();
+        //robot.TurretEncoderReset();
+        //robot.encoder();
         //initColorSensor();
 
         // Init Actions
@@ -148,11 +156,11 @@ public class TeleOpV2  extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         // Initialize the Limelight subsystem to track AprilTag ID 20
-        limelight = new LimelightSubsystem(hardwareMap, 20);
+
 
         // Initialization telemetry
         telemetry.addData("Status", "Initialized");
-        telemetry.addData("Target April Tag", limelight.getTargetAprilTagId());
+        //telemetry.addData("Target April Tag", limelight.getTargetAprilTagId());
         telemetry.update();
         ElapsedTime TimePassed = new ElapsedTime();
         int v_state = 0;
@@ -164,7 +172,11 @@ public class TeleOpV2  extends LinearOpMode {
         //colorTelemetry();
 
         while (opModeIsActive()) {
-
+            CommandManager.INSTANCE.run();
+            limelight.update();
+            limelight.getLatestResult();
+            robot.SH2.set(gamepad2Ex.getLeftY());
+            robot.SH.set(gamepad2Ex.getLeftY());
             drive.driveRobotCentric(
                     gamepad1Ex.getLeftX(),
                     gamepad1Ex.getLeftY(),
@@ -176,38 +188,20 @@ public class TeleOpV2  extends LinearOpMode {
 
             // CRITICAL: Update the Limelight data every loop
             limelight.update();
+            limelight.getLatestResult();
 
             // Get the pitch angle from the subsystem
-            double pitchAngle = limelight.getPitchAngle();
+
 
             // Check if the target is found
             boolean targetVisible = limelight.isTargetFound();
 
-            if (limelight.isTargetFound()){
-                converty = (39.3701 * limelight.getBotposeX()) +  72;
-                convertx = (39.3701 * limelight.getBotposeZ()) + 72;
-                Pose RobotPose = new Pose(convertx, converty, Math.toRadians(limelight.getBotYaw()));
-                scoring = new Path(new BezierLine(startPose, scorePose1));
-                scoring.setLinearHeadingInterpolation(RobotPose.getHeading(), scorePose1.getHeading());
-                scoring.setTimeoutConstraint(2);
-            }
+
 
             // Display the pitch angle in telemetry
             telemetry.addData("==== LIMELIGHT DATA ====", "");
             telemetry.addData("Target Visible", targetVisible ? "YES" : "NO");
-            telemetry.addData("Pitch Angle", "%.2f degrees", pitchAngle);
-            telemetry.addData("Yaw Angle", "%.2f degrees", limelight.getYawAngle());
-            telemetry.addData("limelight botpose X", limelight.getBotposeX());
-            telemetry.addData("limelight botpose Z", limelight.getBotposeZ());
-            telemetry.addData("pedro pose X", convertx);
-            telemetry.addData("pedro pose Y", converty);
 
-            // Add helpful message if target not found
-            if (!targetVisible) {
-                telemetry.addData("Status", "Looking for target (April Tag)");
-            } else {
-                telemetry.addData("Status", "Found target(April tag)");
-            }
             //getColor();
             //colorTelemetry();
 //            switch (v_state)
@@ -235,6 +229,80 @@ public class TeleOpV2  extends LinearOpMode {
 
             //start tele here
 
+            if (!limelight.isTargetFound()){
+                searchElapsedTimer.reset();
+            }
+
+            // Manual turret control with right stick (overrides auto-tracking)
+            if (!autoTrackingEnabled) {
+                double manualPower = gamepad2Ex.getRightX() * TURRET_POWER_MAX;
+                robot.TurretEnc.setPower(manualPower);
+
+                // Reset PID when manually controlling
+                integralSum = 0;
+                lastError = 0;
+
+                telemetry.addData("Mode", "MANUAL OVERRIDE");
+                telemetry.addData("Manual Power", "%.2f", manualPower);
+                if (limelight.isTargetFound()){
+                    telemetry.addData("Yaw error", limelight.getYawAngle());
+                }
+
+            } else if (autoTrackingEnabled) {
+                // Auto-tracking mode
+                if (limelight.isTargetFound()) {
+                    // Target found - use PID to aim
+                    double yawError = limelight.getYawAngle();
+                    double turretPower = calculatePID(yawError);
+                    robot.TurretEnc.setPower(turretPower);
+
+                    // Reset search timer
+                    searchTimer = 0;
+                    searchElapsedTimer.reset();
+
+                    telemetry.addData("Mode", "AUTO-TRACKING");
+                    //telemetry.addData("Target ID", limelight.getTargetAprilTagId());
+                    telemetry.addData("Yaw Error", "%.2f°", yawError);
+                    telemetry.addData("Pitch Angle", "%.2f°", limelight.getPitchAngle());
+                    telemetry.addData("Turret Power", "%.3f", turretPower);
+
+                    if (Math.abs(yawError) < TARGET_TOLERANCE) {
+                        telemetry.addData("Status", "✓ ON TARGET!");
+                        robot.TurretEnc.setPower(0);
+                    } else {
+                        telemetry.addData("Status", "Aiming...");
+                    }
+
+                    // Display bot pose information
+                    telemetry.addData("Bot X", "%.2f", limelight.getBotposeX());
+                    telemetry.addData("Bot Z", "%.2f", limelight.getBotposeZ());
+                    telemetry.addData("Bot Yaw", "%.2f°", limelight.getBotYaw());
+
+                } else if (robot.TurretEnc.getCurrentPosition() > 600 || robot.TurretEnc.getCurrentPosition() < -600) {
+                    autoTrackingEnabled = !autoTrackingEnabled;
+
+                }
+                else if (!limelight.isTargetFound()){
+                    // No target - search mode
+
+                    //searchTimer += searchElapsedTimer.seconds();
+                    //searchElapsedTimer.reset();
+//                    if (searchElapsedTimer.time() < 0.3){
+////                        robot.TurretEnc.setPower(0);
+////                    }
+
+                    //robot.TurretEnc.setPower(SEARCH_POWER * searchDirection);
+                    telemetry.addData("Mode", "SEARCHING");
+                    //robot.TurretEnc.setPower(0);
+                    // Reset PID values
+                    integralSum = 0;
+                    lastError = 0;
+                    //telemetry.addData("Target ID", limelight.getTargetAprilTagId());
+                    //telemetry.addData("Search Direction", searchDirection > 0 ? "Clockwise" : "Counter-Clockwise");
+                    //telemetry.addData("Search Timer", "%.1f s", searchTimer);
+                    telemetry.addData("Status", "Spinning to find target...");
+                }
+            }
 
 
 
@@ -243,43 +311,85 @@ public class TeleOpV2  extends LinearOpMode {
             } else {
                 intake.stopIntake();
             }
+//            if (gamepad2Ex.getButton(GamepadKeys.Button.A)){
+//                intake.UNBLOCK();
+//            }else {
+//                intake.BLOCK();
+//            }
             if (gamepad2Ex.getButton(GamepadKeys.Button.A)){
-                intake.UNBLOCK();
-            }else {
-                intake.BLOCK();
+                autoTrackingEnabled = !autoTrackingEnabled;
+                if (!autoTrackingEnabled) {
+                    //robot.TurretSpin.set(0);
+                    integralSum = 0;
+                    lastError = 0;
+                }
             }
-            if (gamepad2Ex.getButton(GamepadKeys.Button.X)){
-                shooter.runShooter();
-            }
-            if (gamepad2Ex.getButton(GamepadKeys.Button.Y)){
-                shooter.stopShooter();
-            }
-//            if (gamepad1Ex.getButton(GamepadKeys.Button.X) && limelight.isTargetFound()){
-//
-//                follower.followPath(scoring, false);
-//                follower.update();
+//            if (gamepad1Ex.getButton(GamepadKeys.Button.X)){
+//                intake.testCS();
 //            }
-//            if (gamepad2Ex.getButton(GamepadKeys.Button.RIGHT_BUMPER) && gamepad2Ex.getButton(GamepadKeys.Button.DPAD_RIGHT)){
-//                limelight.setTargetAprilTagId(24);
+//            if (gamepad2Ex.getButton(GamepadKeys.Button.X)){
+//                shooter.runShooter();
 //            }
-//            if (gamepad2Ex.getButton(GamepadKeys.Button.LEFT_BUMPER) && gamepad2Ex.getButton(GamepadKeys.Button.DPAD_LEFT)){
-//                limelight.setTargetAprilTagId(20);
+//            if (gamepad2Ex.getButton(GamepadKeys.Button.Y)){
+//                shooter.stopShooter();
+//            }
+//            if (gamepad2Ex.getButton(GamepadKeys.Button.LEFT_BUMPER)){
+//                if (!robot.TurretEnc.isBusy()) {
+//                    double yawerror = limelight.getLatestResult().getTx();
+//                    if (yawerror > 5.0) {
+//                        robot.turnToAprilTag(yawerror);
+//                    }
+//                }
 //            }
 
-            telemetry.update();
 
 
 
 
 
 
-           // telemetry.addData("Extension Position Variable", extpos);
-            telemetry.addData("TimePassed", TimePassed.time());
+
+
+
+
+
+            telemetry.addData("Turret mode:", autoTrackingEnabled ? "auto":"manual");
+            telemetry.addData("Search timer", searchElapsedTimer.time());
             telemetry.update();
 
 
         }
     }
+    private double calculatePID(double error) {
+        // Proportional term
+        double P = Kp * error;
+
+        // Integral term
+        integralSum += error * pidTimer.seconds();
+        double I = Ki * integralSum;
+
+        // Derivative term
+        double D = Kd * (error - lastError) / pidTimer.seconds();
+
+        pidTimer.reset();
+        lastError = error;
+
+        // Calculate total power
+        double power = P + I + D;
+
+        // Clamp power to max values
+        if (Math.abs(power) > TURRET_POWER_MAX) {
+            power = Math.signum(power) * TURRET_POWER_MAX;
+        } else if (Math.abs(error) > TARGET_TOLERANCE && Math.abs(power) < TURRET_POWER_MIN) {
+            power = Math.signum(power) * TURRET_POWER_MIN;
+        } else if (Math.abs(error) <= TARGET_TOLERANCE) {
+            power = 0; // Stop when on target
+        }
+
+        return power;
+    }
+
+
 }
 
 
