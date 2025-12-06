@@ -37,8 +37,8 @@ public class AutonomousProgram extends NextFTCOpMode {
     //private Follower follower;
 
     private final Pose startPose = new Pose(21, 123.5, Math.toRadians(235)); //starting pose
-    private final Pose ScorePoseBigTriangle = new Pose(56, 88, Math.toRadians(180)); //first scoring spot at the big triangle
-    private final Pose FirstIntake = new Pose(33, 80, Math.toRadians(180)); //Ending spot of first stack intake
+    private final Pose ScorePoseBigTriangle = new Pose(63, 76, Math.toRadians(180)); //first scoring spot at the big triangle
+    private final Pose FirstIntake = new Pose(28, 74, Math.toRadians(180)); //Ending spot of first stack intake
     private final Pose SecondIntake = new Pose(33, 50, Math.toRadians(180)); //Ending spot of second stack intake
     private final Pose ParkPose = new Pose(45, 33, Math.toRadians(180)); //Parking spot at the end of Auto
     private Path scorePreload;
@@ -73,18 +73,18 @@ public class AutonomousProgram extends NextFTCOpMode {
         follower().setStartingPose(startPose);
         return new SequentialGroup(
                 SubIntake.INSTANCE.KickDown,
-                SubShoot.INSTANCE.HoldShoot,
+                SubShoot.INSTANCE.AutoCloseShoot,
                 SubShoot.INSTANCE.StopShoot,
                 SubIntake.INSTANCE.HoldIntake,
                 SubIntake.INSTANCE.StopIntake,
                 new FollowPath(scorePreload, false),
-                SubShoot.INSTANCE.HoldShoot,
-                new Delay(1.2),
+                SubShoot.INSTANCE.AutoCloseShoot,
+                new Delay(1),
                 SubIntake.INSTANCE.KickUp,
                 // first ball
                 new Delay(0.4),
                 SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.HoldIntake),
-                new Delay(1),
+                new Delay(0.9),
                 SubIntake.INSTANCE.StopIntake.and(SubIntake.INSTANCE.KickUp),
                 // second ball
                 new Delay(0.4),
@@ -96,9 +96,9 @@ public class AutonomousProgram extends NextFTCOpMode {
                 SubIntake.INSTANCE.KickDown,
                 SubShoot.INSTANCE.StopShoot,
                 SubIntake.INSTANCE.HoldIntake,
-                new FollowPath(grabPickup1, true, 0.3),
+                new FollowPath(grabPickup1, true, 0.5),
                 SubIntake.INSTANCE.StopIntake,
-                SubShoot.INSTANCE.HoldShoot,
+                SubShoot.INSTANCE.AutoCloseShoot,
                 new FollowPath(scorePickup1, true),
                 new Delay(0.6),
                 SubIntake.INSTANCE.KickUp,

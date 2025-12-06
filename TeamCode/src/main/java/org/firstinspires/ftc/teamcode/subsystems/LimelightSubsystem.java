@@ -19,7 +19,7 @@ public class LimelightSubsystem {
     private double pitchAngle = 0.0;
     private double yawAngle = 0.0;
     private boolean targetFound = false;
-    private int targetAprilTagId = 20;
+    private int targetAprilTagId = 0;
     private double botposeX;
     private double botposeZ;
     private double botYaw;
@@ -56,10 +56,7 @@ public class LimelightSubsystem {
 
             // Search for the target AprilTag ID
             for (LLResultTypes.FiducialResult fiducial : fiducialResults) {
-                if (fiducial.getFiducialId() == targetAprilTagId ||
-                        fiducial.getFiducialId() == 21 ||
-                        fiducial.getFiducialId() == 22 ||
-                        fiducial.getFiducialId() == 23) {
+                if (fiducial.getFiducialId() == targetAprilTagId) {
 
                     pitchAngle = fiducial.getTargetYDegrees();
                     yawAngle = fiducial.getTargetXDegrees();
