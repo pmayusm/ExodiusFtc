@@ -45,7 +45,7 @@ public class SubShoot implements Subsystem {
     public Command StopShoot2 = new SetPower(shooterMotor2, 0).requires(this);
     public Command ReverseShoot = new SetPower(shooterMotor, -1).requires(this);
     public Command ReverseShoot2 = new SetPower(shooterMotor2, -1).requires(this);
-    public Command AutoCloseShoot = new SetPower(shooterMotor, 0.96).requires(this);
+    public Command AutoCloseShoot = new SetPower(shooterMotor, 0.83).requires(this);
     public Command AutoCloseShoot2 = new SetPower(shooterMotor2, 0.98).requires(this);
 
     public double getvel(){

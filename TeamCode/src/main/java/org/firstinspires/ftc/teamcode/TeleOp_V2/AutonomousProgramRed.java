@@ -26,10 +26,10 @@ import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
-@Autonomous(name = "NextFTC Autonomous Program Java")
-public class AutonomousProgram extends NextFTCOpMode {
+@Autonomous(name = "NextFTC Autonomous Program RED")
+public class AutonomousProgramRed extends NextFTCOpMode {
     private LimelightSubsystem limelight;
-    public AutonomousProgram() {
+    public AutonomousProgramRed() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 new SubsystemComponent(SubShoot.INSTANCE, SubIntake.INSTANCE, TurretPIDSubsystem.INSTANCE),
@@ -39,11 +39,11 @@ public class AutonomousProgram extends NextFTCOpMode {
 
     //private Follower follower;
 
-    private final Pose startPose = new Pose(21, 123.5, Math.toRadians(235)); //starting pose
-    private final Pose ScorePoseBigTriangle = new Pose(63, 76, Math.toRadians(160)); //first scoring spot at the big triangle
-    private final Pose FirstIntake = new Pose(28, 70, Math.toRadians(180)); //Ending spot of first stack intake
-    private final Pose SecondIntake = new Pose(33, 50, Math.toRadians(180)); //Ending spot of second stack intake
-    private final Pose ParkPose = new Pose(45, 33, Math.toRadians(180)); //Parking spot at the end of Auto
+    private final Pose startPose = new Pose(123, 123.5, Math.toRadians(305)); //starting pose
+    private final Pose ScorePoseBigTriangle = new Pose(81, 76, Math.toRadians(20)); //first scoring spot at the big triangle
+    private final Pose FirstIntake = new Pose(116, 70, Math.toRadians(0)); //Ending spot of first stack intake
+    private final Pose SecondIntake = new Pose(111, 50, Math.toRadians(0)); //Ending spot of second stack intake
+    private final Pose ParkPose = new Pose(99, 33, Math.toRadians(0)); //Parking spot at the end of Auto
     private Path scorePreload;
     private Path grabPickup1;
     private Path scorePickup1;
@@ -55,13 +55,13 @@ public class AutonomousProgram extends NextFTCOpMode {
         scorePreload = new Path(new BezierLine(startPose, ScorePoseBigTriangle));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), ScorePoseBigTriangle.getHeading());
 
-        grabPickup1 = new Path(new BezierCurve(ScorePoseBigTriangle, new Pose(55, 70), FirstIntake));
+        grabPickup1 = new Path(new BezierCurve(ScorePoseBigTriangle, new Pose(89, 70), FirstIntake));
         grabPickup1.setLinearHeadingInterpolation(ScorePoseBigTriangle.getHeading(), FirstIntake.getHeading());
 
         scorePickup1 = new Path(new BezierLine(FirstIntake, ScorePoseBigTriangle));
         scorePickup1.setLinearHeadingInterpolation(FirstIntake.getHeading(), ScorePoseBigTriangle.getHeading());
 
-        grabPickup2 = new Path(new BezierCurve(ScorePoseBigTriangle,new Pose(60.000, 60.000), new Pose(47.000, 56.000),SecondIntake));
+        grabPickup2 = new Path(new BezierCurve(ScorePoseBigTriangle,new Pose(84, 60.000), new Pose(97, 56.000),SecondIntake));
         grabPickup2.setConstantHeadingInterpolation(Math.toRadians(180));
 
         scorePickup2 = new Path(new BezierLine(SecondIntake, ScorePoseBigTriangle));
@@ -136,7 +136,7 @@ public class AutonomousProgram extends NextFTCOpMode {
 
     @Override
     public void onInit(){
-        limelight = new LimelightSubsystem(hardwareMap, 20);
+        limelight = new LimelightSubsystem(hardwareMap, 24);
 
         // Set limelight reference in turret subsystem
         TurretPIDSubsystem.INSTANCE.setLimelight(limelight);

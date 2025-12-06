@@ -53,7 +53,7 @@ public class NextTeleRed extends NextFTCOpMode {
     private double integralSum = 0;
     private double lastError = 0;
     private ElapsedTime pidTimer = new ElapsedTime();
-    private static final double TARGET_TOLERANCE = 5.0;
+    private static final double TARGET_TOLERANCE = 2.0;
     private ElapsedTime searchElapsedTimer = new ElapsedTime();
     private boolean autoTrackingEnabled = false;
     private LimelightSubsystem limelight;
