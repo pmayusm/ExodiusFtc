@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.arcrobotics.ftclib.util.InterpLUT;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import dev.nextftc.control.ControlSystem;
@@ -22,7 +23,7 @@ public class SubShoot implements Subsystem {
     private MotorEx shooterMotor2 = new MotorEx("SH2").reversed();
 
     private ControlSystem controlSystem = ControlSystem.builder()
-            .velPid(0.002, 0.000001, 0.2)
+            .velPid(0.01, 0, 0.01)
             .build();
 
 
@@ -59,20 +60,22 @@ public class SubShoot implements Subsystem {
 
     }
 
-    //public Command Launch = new SetPower(shooterMotor, 1).requires(this);
+
+
 
 
     @Override
     public void initialize() {
         // initialization logic (runs on init)
 
-        shooterMotor.getMotor().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+        //shooterMotor.getMotor().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
     @Override
     public void periodic() {
         // periodic logic (runs every loop)
         shooterMotor.setPower(controlSystem.calculate(shooterMotor.getState()));
+
+
 
 
     }

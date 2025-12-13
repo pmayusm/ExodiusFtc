@@ -1,14 +1,17 @@
 package org.firstinspires.ftc.teamcode.TeleOp_V2;
 
 
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.MotorPIDVelocity;
 import org.firstinspires.ftc.teamcode.subsystems.SubIntake;
 import org.firstinspires.ftc.teamcode.subsystems.SubShoot;
+
 
 import java.time.Duration;
 
@@ -18,16 +21,21 @@ import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.core.components.SubsystemComponent;
+import dev.nextftc.extensions.pedro.PedroComponent;
+import dev.nextftc.extensions.pedro.PedroDriverControlled;
 import dev.nextftc.ftc.Gamepads;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
+import dev.nextftc.hardware.driving.DriverControlledCommand;
 import dev.nextftc.hardware.driving.MecanumDriverControlled;
 import dev.nextftc.hardware.impl.MotorEx;
+
 
 @TeleOp(name = "NextFTC TeleOp Program Java")
 public class NextTele extends NextFTCOpMode {
     public NextTele() {
         addComponents(
+                new PedroComponent(Constants::createFollower),
                 new SubsystemComponent(SubShoot.INSTANCE, SubIntake.INSTANCE),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
@@ -57,6 +65,10 @@ public class NextTele extends NextFTCOpMode {
     private ElapsedTime searchElapsedTimer = new ElapsedTime();
     private boolean autoTrackingEnabled = false;
     private LimelightSubsystem limelight;
+    public static Pose startingPose = new Pose(0, 0, Math.toRadians(0));
+    public static Pose BLUEGOAL = new Pose(10, 138, Math.toRadians(0));
+
+
     public MotorPIDVelocity motorPIDVelocity = new MotorPIDVelocity(1, 0, 0.01);
     // 1150 rpm motor has encoder resolution of 145.1
     private double calculatePID(double error) { //PID calculations for setting turret motor aiming power
@@ -97,6 +109,7 @@ public class NextTele extends NextFTCOpMode {
         SubIntake.INSTANCE.initialize();
         TurretMotor.zeroed();
         pidTimer.reset();
+        PedroComponent.follower().setStartingPose(startingPose);
 
     }
     @Override
@@ -105,24 +118,30 @@ public class NextTele extends NextFTCOpMode {
     @Override
     public void onStartButtonPressed() {
         TurretMotor.zeroed();
-        Command driverControlled = new MecanumDriverControlled(
-                frontLeftMotor.brakeMode(),
-                frontRightMotor.brakeMode(),
-                backLeftMotor.brakeMode(),
-                backRightMotor.brakeMode(),
+        DriverControlledCommand driverControlled = new PedroDriverControlled(
                 Gamepads.gamepad1().leftStickY().negate(),
-                Gamepads.gamepad1().leftStickX(),
-                Gamepads.gamepad1().rightStickX()
+                Gamepads.gamepad1().leftStickX().negate(),
+                Gamepads.gamepad1().rightStickX().negate()
         );
         driverControlled.schedule();
+//        Command driverControlled = new MecanumDriverControlled(
+//                frontLeftMotor.brakeMode(),
+//                frontRightMotor.brakeMode(),
+//                backLeftMotor.brakeMode(),
+//                backRightMotor.brakeMode(),
+//                Gamepads.gamepad1().leftStickY().negate(),
+//                Gamepads.gamepad1().leftStickX(),
+//                Gamepads.gamepad1().rightStickX()
+//        );
+//        driverControlled.schedule();
         limelight.update();
         limelight.getLatestResult();
 
 
 
         Gamepads.gamepad2().x()
-                .whenBecomesTrue(SubShoot.INSTANCE.HoldShoot.and(SubShoot.INSTANCE.PIDshot))
-                .whenBecomesFalse(SubShoot.INSTANCE.StopShoot.and(SubShoot.INSTANCE.PIDstop));
+                .whenBecomesTrue(SubShoot.INSTANCE.PIDshot)
+                .whenBecomesFalse(SubShoot.INSTANCE.PIDstop);
         //.whenBecomesFalse(SubShoot.INSTANCE.CloseLaunch);
         Gamepads.gamepad2().y()
                 .whenBecomesTrue(SubShoot.INSTANCE.ReverseShoot.and(SubShoot.INSTANCE.ReverseShoot2))
@@ -193,6 +212,10 @@ public class NextTele extends NextFTCOpMode {
         if (gamepad2.b) {
             autoTrackingEnabled = false;
         }
+
+        telemetry.addData("RobotPosX", PedroComponent.follower().getPose().getX());
+        telemetry.addData("RobotPosY", PedroComponent.follower().getPose().getY());
+        telemetry.addData("RobotPosHead", PedroComponent.follower().getPose().getHeading());
         telemetry.addData("TurretPos", TurretMotor.getCurrentPosition());
         telemetry.addData("flywheelvel", SubShoot.INSTANCE.getvel());
         telemetry.update();

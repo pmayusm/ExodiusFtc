@@ -45,4 +45,5 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.7'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.4.21'
     implementation "com.bylazar:fullpanels:1.0.6"
+    implementation 'dev.nextftc.extensions:pedro:1.0.0'
 }

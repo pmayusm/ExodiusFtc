@@ -20,8 +20,8 @@ public class Constants {
 
     // strafer chassis with battery and pinpoint + 2 odo wheels is 5.35239 kg
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(4)
-            .strafePodX(6.5)
+            .forwardPodY(-4)
+            .strafePodX(-6.5)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("pinpoint")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
