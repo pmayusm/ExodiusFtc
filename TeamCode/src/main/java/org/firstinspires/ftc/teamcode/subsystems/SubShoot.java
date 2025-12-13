@@ -7,6 +7,7 @@ import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.subsystems.Subsystem;
+import dev.nextftc.hardware.controllable.RunToVelocity;
 import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
 import dev.nextftc.hardware.positionable.SetPosition;
@@ -20,6 +21,9 @@ public class SubShoot implements Subsystem {
     private MotorEx shooterMotor = new MotorEx("SH").zeroed();
     private MotorEx shooterMotor2 = new MotorEx("SH2").reversed();
 
+    private ControlSystem controlSystem = ControlSystem.builder()
+            .velPid(0.002, 0.000001, 0.2)
+            .build();
 
 
     public LambdaCommand Shoot = new LambdaCommand().requires(this)
@@ -47,6 +51,8 @@ public class SubShoot implements Subsystem {
     public Command ReverseShoot2 = new SetPower(shooterMotor2, -1).requires(this);
     public Command AutoCloseShoot = new SetPower(shooterMotor, 0.83).requires(this);
     public Command AutoCloseShoot2 = new SetPower(shooterMotor2, 0.98).requires(this);
+    public Command PIDshot = new RunToVelocity(controlSystem, 2000, 100).requires(this);
+    public Command PIDstop = new RunToVelocity(controlSystem, 0, 50).requires(this);
 
     public double getvel(){
         return shooterMotor.getVelocity();
@@ -59,11 +65,15 @@ public class SubShoot implements Subsystem {
     @Override
     public void initialize() {
         // initialization logic (runs on init)
+
         shooterMotor.getMotor().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
     }
     @Override
     public void periodic() {
         // periodic logic (runs every loop)
+        shooterMotor.setPower(controlSystem.calculate(shooterMotor.getState()));
+
+
     }
 }
