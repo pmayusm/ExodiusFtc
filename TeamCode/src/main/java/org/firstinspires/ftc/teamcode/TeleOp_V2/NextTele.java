@@ -121,8 +121,8 @@ public class NextTele extends NextFTCOpMode {
 
 
         Gamepads.gamepad2().x()
-                .whenBecomesTrue(SubShoot.INSTANCE.HoldShoot.and(SubShoot.INSTANCE.HoldShoot2))
-                .whenBecomesFalse(SubShoot.INSTANCE.StopShoot.and(SubShoot.INSTANCE.StopShoot2));
+                .whenBecomesTrue(SubShoot.INSTANCE.HoldShoot.and(SubShoot.INSTANCE.PIDshot))
+                .whenBecomesFalse(SubShoot.INSTANCE.StopShoot.and(SubShoot.INSTANCE.PIDstop));
         //.whenBecomesFalse(SubShoot.INSTANCE.CloseLaunch);
         Gamepads.gamepad2().y()
                 .whenBecomesTrue(SubShoot.INSTANCE.ReverseShoot.and(SubShoot.INSTANCE.ReverseShoot2))
@@ -194,6 +194,7 @@ public class NextTele extends NextFTCOpMode {
             autoTrackingEnabled = false;
         }
         telemetry.addData("TurretPos", TurretMotor.getCurrentPosition());
+        telemetry.addData("flywheelvel", SubShoot.INSTANCE.getvel());
         telemetry.update();
 
     }
