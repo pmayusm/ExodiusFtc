@@ -21,6 +21,7 @@ import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.core.components.SubsystemComponent;
+import dev.nextftc.core.units.Angle;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.extensions.pedro.PedroDriverControlled;
 import dev.nextftc.ftc.Gamepads;
@@ -67,6 +68,7 @@ public class NextTele extends NextFTCOpMode {
     private LimelightSubsystem limelight;
     public static Pose startingPose = new Pose(0, 0, Math.toRadians(0));
     public static Pose BLUEGOAL = new Pose(10, 138, Math.toRadians(0));
+    public double DISTANCETOBLUEGOAL = PedroComponent.follower().getPose().distanceFrom(BLUEGOAL);
 
 
     public MotorPIDVelocity motorPIDVelocity = new MotorPIDVelocity(1, 0, 0.01);
@@ -213,11 +215,26 @@ public class NextTele extends NextFTCOpMode {
             autoTrackingEnabled = false;
         }
 
-        telemetry.addData("RobotPosX", PedroComponent.follower().getPose().getX());
-        telemetry.addData("RobotPosY", PedroComponent.follower().getPose().getY());
-        telemetry.addData("RobotPosHead", PedroComponent.follower().getPose().getHeading());
+        double dx = BLUEGOAL.getX() - PedroComponent.follower().getPose().getX();
+        double dy = BLUEGOAL.getY() - PedroComponent.follower().getPose().getY();
+        double fieldAngleToGoal = Math.toDegrees(Math.atan2(dy, dx));
+        double robotHeading = Math.toDegrees(PedroComponent.follower().getHeading());
+        double turretTargetAngle = fieldAngleToGoal - robotHeading;
+        if (turretTargetAngle > 180){
+            turretTargetAngle = turretTargetAngle - 360;
+        }
+        if (turretTargetAngle < -180){
+            turretTargetAngle = turretTargetAngle + 360;
+        }
+
+
+        telemetry.addData("robotHeading degrees", robotHeading);
+        telemetry.addData("FieldAngle (deg)", fieldAngleToGoal);
+        telemetry.addData("Turret Target (deg)", turretTargetAngle);
+        telemetry.addData("RobotPose", PedroComponent.follower().getPose());
         telemetry.addData("TurretPos", TurretMotor.getCurrentPosition());
         telemetry.addData("flywheelvel", SubShoot.INSTANCE.getvel());
+        telemetry.addData("Distance to blue goal", DISTANCETOBLUEGOAL);
         telemetry.update();
 
     }
