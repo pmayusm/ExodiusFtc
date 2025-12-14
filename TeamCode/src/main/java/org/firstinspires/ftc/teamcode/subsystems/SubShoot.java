@@ -74,9 +74,5 @@ public class SubShoot implements Subsystem {
     public void periodic() {
         // periodic logic (runs every loop)
         shooterMotor.setPower(controlSystem.calculate(shooterMotor.getState()));
-
-
-
-
     }
 }
