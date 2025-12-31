@@ -32,8 +32,7 @@ public class SubTurret implements Subsystem {
     @Override
     public void initialize() {
         // initialization logic (runs on init)
-        TurretMotor.zeroed();
-        TurretMotor.zero();
+        TurretMotor.atPosition(0);
     }
     @Override
     public void periodic() {

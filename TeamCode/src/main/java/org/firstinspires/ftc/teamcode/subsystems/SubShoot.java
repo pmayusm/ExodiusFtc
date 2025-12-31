@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.arcrobotics.ftclib.util.InterpLUT;
+import com.pedropathing.math.MathFunctions;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import dev.nextftc.control.ControlSystem;
@@ -19,11 +20,14 @@ public class SubShoot implements Subsystem {
     private SubShoot(){}
 
     private ServoEx HoodRot = new ServoEx("Hood");
-    private MotorEx shooterMotor = new MotorEx("SH").zeroed();
+    private MotorEx shooterMotor = new MotorEx("SH");
     private MotorEx shooterMotor2 = new MotorEx("SH2").reversed();
+    public boolean PIDTRUE;
+    double shottune;
 
     private ControlSystem controlSystem = ControlSystem.builder()
-            .velPid(0.01, 0, 0.01)
+            .velPid(0.35, 0, 0.005)
+            .basicFF(0.004, 0.5, 0)
             .build();
 
 
@@ -52,12 +56,22 @@ public class SubShoot implements Subsystem {
     public Command ReverseShoot2 = new SetPower(shooterMotor2, -1).requires(this);
     public Command AutoCloseShoot = new SetPower(shooterMotor, 0.83).requires(this);
     public Command AutoCloseShoot2 = new SetPower(shooterMotor2, 0.98).requires(this);
-    public Command PIDshot = new RunToVelocity(controlSystem, 2000, 100).requires(this);
-    public Command PIDstop = new RunToVelocity(controlSystem, 0, 50).requires(this);
+    public Command PIDshot = new RunToVelocity(controlSystem, -1280, 30).requires(this);
+    public Command PIDstop = new RunToVelocity(controlSystem, 0, 2000).requires(this);
+
+    public Command InterpolationTuning(){
+        return new RunToVelocity(controlSystem, shottune, 50 ).requires(this);
+    }
 
     public double getvel(){
         return shooterMotor.getVelocity();
 
+    }
+    public void setTargetvelocity(double targvel){
+        shottune = targvel;
+    }
+    public double getTargetvelocity(){
+        return shottune;
     }
 
 
@@ -73,6 +87,19 @@ public class SubShoot implements Subsystem {
     @Override
     public void periodic() {
         // periodic logic (runs every loop)
-        shooterMotor.setPower(controlSystem.calculate(shooterMotor.getState()));
+        if (PIDTRUE){
+            shooterMotor.setPower(controlSystem.calculate(shooterMotor.getState()));
+        }
+        if (!PIDTRUE){
+            shooterMotor.setPower(0);
+        }
+
+
+    }
+    public void setPIDTRUE(boolean pidstate){
+        PIDTRUE = pidstate;
+    }
+    public boolean getPIDTRUE(){
+        return PIDTRUE;
     }
 }
