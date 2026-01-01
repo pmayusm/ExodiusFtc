@@ -155,17 +155,19 @@ public class interpolationtest extends NextFTCOpMode {
 
 
 
+        Gamepads.gamepad2().leftBumper()
+                .whenBecomesTrue(SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.HoldIntake))
+                .whenBecomesFalse(SubIntake.INSTANCE.KickUp.and(SubIntake.INSTANCE.StopIntake));
         Gamepads.gamepad2().rightBumper()
-                .whenBecomesTrue(
-                        new SequentialGroup(
-                                SubIntake.INSTANCE.KickUp,
-                                new Delay(0.4),
-                                SubIntake.INSTANCE.KickDown
+                .whenBecomesTrue(SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.transferIntake))
+                .whenBecomesFalse(SubIntake.INSTANCE.StopIntake.and(SubIntake.INSTANCE.KickUp));
+        Gamepads.gamepad1().rightTrigger().greaterThan(0.2)
+                .whenBecomesTrue(SubIntake.INSTANCE.HoldIntake)
+                .whenBecomesFalse(SubIntake.INSTANCE.StopIntake);
 
-                        )
-                        //SubIntake.INSTANCE.KickUp
-                        //Claw.INSTANCE.close.then(Lift.INSTANCE.toHigh)
-                );
+        Gamepads.gamepad1().leftTrigger().greaterThan(0.2)
+                .whenBecomesTrue(SubIntake.INSTANCE.ReverseIntake)
+                .whenBecomesFalse(SubIntake.INSTANCE.StopIntake);
 
 
 
@@ -205,16 +207,26 @@ public class interpolationtest extends NextFTCOpMode {
 //            double motorPower = motorPIDVelocity.calculate(600000, currentMotorVelocity);
 //            ShooterMotor.setPower(motorPower);
 //        }
+
         if (gamepad2.a) {
-            autoTrackingEnabled = true;
+            // Button just pressed - schedule the command with the current target
+            SubTurret.INSTANCE.AIMER().schedule();
+        } else if (!gamepad2.a) {
+            // Button released - run TestRun
+            SubTurret.INSTANCE.TestRun.schedule();
         }
-        if (gamepad2.b) {
-            autoTrackingEnabled = false;
-        }
 
 
 
-        // turnticks =
+        double dx = BLUEGOAL.getX() - PedroComponent.follower().getPose().getX();
+        double dy = BLUEGOAL.getY() - PedroComponent.follower().getPose().getY();
+        double fieldAngleToGoal = Math.toDegrees(Math.atan2(dy, dx));
+        double robotHeading = Math.toDegrees(PedroComponent.follower().getHeading());
+        double turretTargetAngle = fieldAngleToGoal - robotHeading;
+        double CorrectTurning = normalizeAngle(turretTargetAngle);
+        turnage = (CorrectTurning/360) * 145.1 * 3.1;
+        SubTurret.INSTANCE.setTarget(turnage * -1);
+
         DISTANCETOBLUEGOAL = PedroComponent.follower().getPose().distanceFrom(BLUEGOAL);
 
 
@@ -222,27 +234,23 @@ public class interpolationtest extends NextFTCOpMode {
         telemetry.addData("Distance to blue goal", DISTANCETOBLUEGOAL);
         telemetry.addData("target velocity", SubShoot.INSTANCE.getTargetvelocity());
         telemetry.update();
-        shootertune = 0.0945044 * (Math.pow(DISTANCETOBLUEGOAL, 2)) - 3.75527 * DISTANCETOBLUEGOAL + 1884.5904;
+        //shootertune = 0.0945044 * (Math.pow(DISTANCETOBLUEGOAL, 2)) - 3.75527 * DISTANCETOBLUEGOAL + 1884.5904;
+        shootertune = 0.00206249 * (Math.pow(DISTANCETOBLUEGOAL, 3)) - 0.642804 * (Math.pow(DISTANCETOBLUEGOAL, 2 )) + 68.4677 * DISTANCETOBLUEGOAL - 1083.84987;
         SubShoot.INSTANCE.setTargetvelocity(shootertune);
-        if (gamepad1.a) {
-            // Button just pressed - schedule the command with the current target
-            SubTurret.INSTANCE.AIMER().schedule();
-        } else if (!gamepad1.a) {
-            // Button released - run TestRun
-            SubTurret.INSTANCE.TestRun.schedule();
-        }
+
 //        if (gamepad2.aWasPressed()){
-//            shootertune += 100;
+//            shootertune += 50;
 //        }
 //        if (gamepad2.bWasPressed()){
-//            shootertune -= 100;
+//            shootertune -= 50;
 //        }
         if (gamepad2.x){
+            SubShoot.INSTANCE.setPIDTRUE(true);
             SubShoot.INSTANCE.InterpolationTuning().schedule();
         } else if (!gamepad2.x){
-            SubShoot.INSTANCE.PIDstop.schedule();
+            SubShoot.INSTANCE.setPIDTRUE(false);
         }
-        //0.0945044x^2 - 3.75527x +  1884.5904
+        //0.00206249x^3 - 0.642804x^2 + 68.4677x - 1083.84987
 
     }
     double normalizeAngle(double angle) {

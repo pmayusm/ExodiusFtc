@@ -46,13 +46,7 @@ public class NextTele extends NextFTCOpMode {
     }
 
     // change the names and directions to suit your robot
-    private final MotorEx frontLeftMotor = new MotorEx("FL").reversed().brakeMode();
-    private final MotorEx frontRightMotor = new MotorEx("FR").brakeMode();
-    private final MotorEx backLeftMotor = new MotorEx("BL").reversed().brakeMode();
-    private final MotorEx backRightMotor = new MotorEx("BR").brakeMode();
 
-    private final MotorEx TurretMotor = new MotorEx("TE").brakeMode().reversed();
-    private final MotorEx ShooterMotor = new MotorEx("SH").zeroed();
 
 
     //Turret Aiming variables:
@@ -69,7 +63,7 @@ public class NextTele extends NextFTCOpMode {
     private boolean autoTrackingEnabled = false;
     private LimelightSubsystem limelight;
     public static Pose startingPose = new Pose(8, 8, Math.toRadians(0));
-    public static Pose BLUEGOAL = new Pose(10, 138, Math.toRadians(0));
+    public static Pose BLUEGOAL = new Pose(8, 138, Math.toRadians(0));
     public double DISTANCETOBLUEGOAL;
     public double turnage;
 
@@ -109,21 +103,22 @@ public class NextTele extends NextFTCOpMode {
     @Override
     public void onInit() {
         limelight = new LimelightSubsystem(hardwareMap, 20);
-        SubShoot.INSTANCE.initialize();
-        SubIntake.INSTANCE.initialize();
-        SubTurret.INSTANCE.initialize();
         pidTimer.reset();
         PedroComponent.follower().setStartingPose(startingPose);
+        telemetry.addData("pos", SubTurret.INSTANCE.getPosition());
+        telemetry.update();
+
+
 
 
     }
     @Override
     public void onWaitForStart(){
-
+        telemetry.addData("pos", SubTurret.INSTANCE.getPosition());
+        telemetry.update();
     }
     @Override
     public void onStartButtonPressed() {
-        TurretMotor.zeroed();
         DriverControlledCommand driverControlled = new PedroDriverControlled(
                 Gamepads.gamepad1().leftStickY().negate(),
                 Gamepads.gamepad1().leftStickX().negate(),
@@ -160,16 +155,11 @@ public class NextTele extends NextFTCOpMode {
 
 
         Gamepads.gamepad2().rightBumper()
-                .whenBecomesTrue(
-                        new SequentialGroup(
-                                SubIntake.INSTANCE.KickUp,
-                                new Delay(0.4),
-                                SubIntake.INSTANCE.KickDown
-
-                        )
-                        //SubIntake.INSTANCE.KickUp
-                        //Claw.INSTANCE.close.then(Lift.INSTANCE.toHigh)
-                );
+                .whenBecomesTrue(SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.transferIntake))
+                .whenBecomesFalse(SubIntake.INSTANCE.StopIntake.and(SubIntake.INSTANCE.KickUp));
+        Gamepads.gamepad2().leftBumper()
+                .whenBecomesTrue(SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.HoldIntake))
+                .whenBecomesFalse(SubIntake.INSTANCE.KickUp.and(SubIntake.INSTANCE.StopIntake));
         Gamepads.gamepad1().rightTrigger().greaterThan(0.2)
                 .whenBecomesTrue(SubIntake.INSTANCE.HoldIntake)
                 .whenBecomesFalse(SubIntake.INSTANCE.StopIntake);
@@ -224,12 +214,12 @@ public class NextTele extends NextFTCOpMode {
 //            double motorPower = motorPIDVelocity.calculate(600000, currentMotorVelocity);
 //            ShooterMotor.setPower(motorPower);
 //        }
-        if (gamepad2.a) {
-            autoTrackingEnabled = true;
-        }
-        if (gamepad2.b) {
-            autoTrackingEnabled = false;
-        }
+//        if (gamepad2.a) {
+//            autoTrackingEnabled = true;
+//        }
+//        if (gamepad2.b) {
+//            autoTrackingEnabled = false;
+//        }
         if (gamepad2.x){
             SubShoot.INSTANCE.setPIDTRUE(true);
         }
@@ -243,27 +233,27 @@ public class NextTele extends NextFTCOpMode {
         double robotHeading = Math.toDegrees(PedroComponent.follower().getHeading());
         double turretTargetAngle = fieldAngleToGoal - robotHeading;
         double CorrectTurning = normalizeAngle(turretTargetAngle);
-        turnage = (CorrectTurning/360) * 145.1 * 3.1;
+        turnage = (CorrectTurning/360) * 145.1 * 3.4;
 
         // turnticks =
 
 
-        SubTurret.INSTANCE.setTarget(turnage * -1);
+        SubTurret.INSTANCE.setTarget(turnage);
         DISTANCETOBLUEGOAL = PedroComponent.follower().getPose().distanceFrom(BLUEGOAL);
         telemetry.addData("robotHeading degrees", robotHeading);
         telemetry.addData("turret turnage", turnage);
         telemetry.addData("FieldAngle (deg)", fieldAngleToGoal);
         telemetry.addData("Turret Target (deg)", CorrectTurning);
         //telemetry.addData("RobotPose", PedroComponent.follower().getPose());
-        telemetry.addData("TurretPos", TurretMotor.getCurrentPosition());
+        telemetry.addData("TurretPos", SubTurret.INSTANCE.getPosition());
         telemetry.addData("flywheelvel", SubShoot.INSTANCE.getvel());
         telemetry.addData("Distance to blue goal", DISTANCETOBLUEGOAL);
         telemetry.addData("target ticks", SubTurret.INSTANCE.getTarget());
         telemetry.update();
-        if (gamepad1.a) {
+        if (gamepad2.a) {
             // Button just pressed - schedule the command with the current target
             SubTurret.INSTANCE.AIMER().schedule();
-        } else if (!gamepad1.a) {
+        } else if (!gamepad2.a) {
             // Button released - run TestRun
             SubTurret.INSTANCE.TestRun.schedule();
         }
