@@ -24,6 +24,7 @@ public class SubShoot implements Subsystem {
     private MotorEx shooterMotor2 = new MotorEx("SH2").reversed();
     public boolean PIDTRUE;
     double shottune;
+    double hoodtune;
 
     private ControlSystem controlSystem = ControlSystem.builder()
             .velPid(0.4, 0, 0.005)
@@ -56,16 +57,18 @@ public class SubShoot implements Subsystem {
     public Command ReverseShoot2 = new SetPower(shooterMotor2, -1).requires(this);
     public Command AutoCloseShoot = new SetPower(shooterMotor, 0.83).requires(this);
     public Command AutoCloseShoot2 = new SetPower(shooterMotor2, 0.98).requires(this);
-    public Command PIDshot = new RunToVelocity(controlSystem, 1260, 30).requires(this);
+    public Command PIDshot = new RunToVelocity(controlSystem, 1180, 30).requires(this);
     public Command PIDstop = new RunToVelocity(controlSystem, 0, 2000).requires(this);
 
     public Command InterpolationTuning(){
         return new RunToVelocity(controlSystem, shottune, 30 ).requires(this);
     }
+    public Command HoodInterpolation(){
+        return new SetPosition(HoodRot, hoodtune).requires(this);
+    }
 
     public double getvel(){
         return shooterMotor.getVelocity();
-
     }
     public void setTargetvelocity(double targvel){
 
@@ -74,6 +77,12 @@ public class SubShoot implements Subsystem {
     public double getTargetvelocity(){
 
         return shottune;
+    }
+    public void sethoodtune(double tunevalue){
+        hoodtune = tunevalue;
+    }
+    public double getHoodtune(){
+        return hoodtune;
     }
 
 

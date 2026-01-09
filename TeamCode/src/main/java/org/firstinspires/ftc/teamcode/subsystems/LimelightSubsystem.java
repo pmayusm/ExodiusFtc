@@ -19,7 +19,7 @@ public class LimelightSubsystem {
     private double pitchAngle = 0.0;
     private double yawAngle = 0.0;
     private boolean targetFound = false;
-    private int targetAprilTagId = 0;
+    private int targetAprilTagId;
     private double botposeX;
     private double botposeZ;
     private double botYaw;
@@ -106,6 +106,7 @@ public class LimelightSubsystem {
      * @return true if target is found, false otherwise
      */
     public boolean isTargetFound() {
+
         return targetFound;
     }
 

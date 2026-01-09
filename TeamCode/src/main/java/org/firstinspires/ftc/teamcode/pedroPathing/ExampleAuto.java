@@ -81,6 +81,7 @@ public class ExampleAuto extends OpMode {
         prepare1 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose1, pickup1Pose))
                 .setLinearHeadingInterpolation(scorePose1.getHeading(), pickup1Pose.getHeading())
+
                 .build();
 
         pickup1 = follower.pathBuilder()

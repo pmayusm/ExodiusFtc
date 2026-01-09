@@ -27,10 +27,10 @@ import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
-@Autonomous(name = "NextFTC Autonomous Program Java")
-public class AutonomousProgram extends NextFTCOpMode {
+@Autonomous(name = "blue9Close")
+public class blue9Close extends NextFTCOpMode {
     private LimelightSubsystem limelight;
-    public AutonomousProgram() {
+    public blue9Close() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
                 new SubsystemComponent(SubShoot.INSTANCE, SubIntake.INSTANCE, SubTurret.INSTANCE),
@@ -48,18 +48,13 @@ public class AutonomousProgram extends NextFTCOpMode {
     private final Pose startPose = new Pose(21, 123.5, Math.toRadians(235)); //starting pose
     private final Pose ScorePoseBigTriangle = new Pose(55, 90, Math.toRadians(180)); //first scoring spot at the big triangle
     private final Pose FirstIntake = new Pose(20, 82, Math.toRadians(180)); //Ending spot of first stack intake
-    private final Pose Gate = new Pose(15, 75, Math.toRadians(180));  // Spot to open the gate
     private final Pose SecondIntake = new Pose(10, 55, Math.toRadians(180)); //Ending spot of second stack intake
-    private final Pose ThirdIntake = new Pose(10, 35.5, Math.toRadians(180));
-    private final Pose ParkPose = new Pose(27, 75, Math.toRadians(270)); //Parking spot at the end of Auto
+    private final Pose ParkPose = new Pose(45, 33, Math.toRadians(180)); //Parking spot at the end of Auto
     private PathChain scorePreload;
     private Path grabPickup1;
-    private Path OpenGate;
     private Path scorePickup1;
     private Path grabPickup2;
     private Path scorePickup2;
-    private Path grabPickup3;
-    private Path scorePickup3;
     private Path park;
 
     public void buildPaths() {
@@ -72,62 +67,46 @@ public class AutonomousProgram extends NextFTCOpMode {
         grabPickup1 = new Path(new BezierCurve(ScorePoseBigTriangle, new Pose(55, 70), FirstIntake));
         grabPickup1.setLinearHeadingInterpolation(ScorePoseBigTriangle.getHeading(), FirstIntake.getHeading());
 
-        OpenGate = new Path(new BezierCurve(FirstIntake, new Pose(31, 73), Gate));
-        OpenGate.setLinearHeadingInterpolation(FirstIntake.getHeading(), Gate.getHeading());
-
-        scorePickup1 = new Path(new BezierLine(Gate, ScorePoseBigTriangle));
-        scorePickup1.setLinearHeadingInterpolation(Gate.getHeading(), ScorePoseBigTriangle.getHeading());
+        scorePickup1 = new Path(new BezierLine(FirstIntake, ScorePoseBigTriangle));
+        scorePickup1.setLinearHeadingInterpolation(FirstIntake.getHeading(), ScorePoseBigTriangle.getHeading());
 
         grabPickup2 = new Path(new BezierCurve(ScorePoseBigTriangle,new Pose(60.000, 60.000), new Pose(47.000, 56.000),SecondIntake));
         grabPickup2.setConstantHeadingInterpolation(Math.toRadians(180));
 
-        scorePickup2 = new Path(new BezierCurve(SecondIntake, new Pose(30, 35), ScorePoseBigTriangle));
+        scorePickup2 = new Path(new BezierLine(SecondIntake, ScorePoseBigTriangle));
         scorePickup2.setConstantHeadingInterpolation(Math.toRadians(180));
 
-        grabPickup3 = new Path(new BezierCurve(ScorePoseBigTriangle, new Pose(70.3, 28.5), ThirdIntake));
-        grabPickup3.setConstantHeadingInterpolation(Math.toRadians(180));
-
-        scorePickup3 = new Path(new BezierLine(ThirdIntake, ScorePoseBigTriangle));
-        scorePickup3.setConstantHeadingInterpolation(Math.toRadians(180));
-
         park = new Path(new BezierLine(ScorePoseBigTriangle, ParkPose));
-        park.setLinearHeadingInterpolation(ScorePoseBigTriangle.getHeading(), ParkPose.getHeading());
+        park.setConstantHeadingInterpolation(Math.toRadians(180));
     }
 
 
     private Command autonomousRoutine() {
         return new SequentialGroup(
+                SubIntake.INSTANCE.HoldIntake,
                 new FollowPath(scorePreload, false).asDeadline(
                         SubTurret.INSTANCE.AutonAim
                 ),
-                SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.HoldIntake),
-                new Delay(1.7),
+                SubIntake.INSTANCE.StopIntake.and(SubIntake.INSTANCE.KickDown),
+                SubIntake.INSTANCE.HoldIntake,
+                new Delay(2),
                 SubIntake.INSTANCE.KickUp,
                 new Delay(0.2),
                 new FollowPath(grabPickup1),
-                new Delay(0.5),
-                new FollowPath(OpenGate),
-                new Delay(0.2),
-                new FollowPath(scorePickup1).and(SubIntake.INSTANCE.StopIntake),
-                SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.HoldIntake),
-                new Delay(1.7),
+                new Delay(1),
+                new FollowPath(scorePickup1),
+                SubIntake.INSTANCE.StopIntake.and(SubIntake.INSTANCE.KickDown),
+                SubIntake.INSTANCE.HoldIntake,
+                new Delay(2),
                 SubIntake.INSTANCE.KickUp,
                 new Delay(0.2),
                 new FollowPath(grabPickup2),
                 new Delay(0.5),
-                new FollowPath(scorePickup2).and(SubIntake.INSTANCE.StopIntake),
-                SubIntake.INSTANCE.HoldIntake.and(SubIntake.INSTANCE.KickDown),
-                new Delay(1.7),
-                SubIntake.INSTANCE.KickUp,
-                new FollowPath(grabPickup3),
-                new Delay(0.7),
-                new FollowPath(scorePickup3).and(SubIntake.INSTANCE.StopIntake),
-                SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.HoldIntake),
-                new Delay(1.7),
-                SubIntake.INSTANCE.KickUp,
-                new Delay(0.2),
-                new FollowPath(park).and(SubTurret.INSTANCE.TestRun)
-
+                new FollowPath(scorePickup2),
+                SubIntake.INSTANCE.StopIntake.and(SubIntake.INSTANCE.KickDown),
+                SubIntake.INSTANCE.HoldIntake,
+                new Delay(1.5),
+                SubIntake.INSTANCE.KickUp
 
         );
     }

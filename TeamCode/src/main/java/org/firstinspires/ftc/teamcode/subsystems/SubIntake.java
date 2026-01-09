@@ -34,6 +34,8 @@ public class SubIntake implements Subsystem {
 
     public Command KickUp = new SetPosition(Blocker, 0.97).requires(this);
     public Command KickDown = new SetPosition(Blocker, 0.45).requires(this);
+    // Kickdown - opens blocker
+    // KickUp - closes blocker
     public Command KickMiddle = new SetPosition(Blocker, 0.45).requires(this);
     public Command HoldIntake = new SetPower(IntakeMotor, 1).requires(this);
     public Command transferIntake = new SetPower(IntakeMotor, 0.6).requires(this);

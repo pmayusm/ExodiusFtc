@@ -1,37 +1,26 @@
 package org.firstinspires.ftc.teamcode.TeleOp_V2;
 
 
-import com.arcrobotics.ftclib.command.Command;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.pedroPathing.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.MotorPIDVelocity;
 import org.firstinspires.ftc.teamcode.subsystems.SubIntake;
 import org.firstinspires.ftc.teamcode.subsystems.SubShoot;
 import org.firstinspires.ftc.teamcode.subsystems.SubTurret;
 
 
-import java.time.Duration;
-
-import dev.nextftc.core.commands.CommandManager;
-import dev.nextftc.core.commands.delays.Delay;
-import dev.nextftc.core.commands.groups.ParallelGroup;
-import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.core.components.SubsystemComponent;
-import dev.nextftc.core.units.Angle;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.extensions.pedro.PedroDriverControlled;
 import dev.nextftc.ftc.Gamepads;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.driving.DriverControlledCommand;
-import dev.nextftc.hardware.driving.MecanumDriverControlled;
-import dev.nextftc.hardware.impl.MotorEx;
+import dev.nextftc.hardware.impl.ServoEx;
 
 
 @TeleOp(name = "NextFTC TeleOp Program Java")
@@ -50,8 +39,8 @@ public class NextTele extends NextFTCOpMode {
 
 
     //Turret Aiming variables:
-    private static final double TURRET_POWER_MAX = 1;
-    private static final double TURRET_POWER_MIN = 0.3;
+    private static final double TURRET_POWER_MAX = 0.8;
+    private static final double TURRET_POWER_MIN = 0.2;
     private static final double Kp = 0.040; // increase for raster response, decrease if it oscillates
     private static final double Ki = 0.0001; // increase if it stops early, decrease if it overshoots
     private static final double Kd = 0.001; // increase to reduce overshoot and oscillation, decrease if its too sluggish in moving
@@ -62,10 +51,26 @@ public class NextTele extends NextFTCOpMode {
     private ElapsedTime searchElapsedTimer = new ElapsedTime();
     private boolean autoTrackingEnabled = false;
     private LimelightSubsystem limelight;
+
     public static Pose startingPose = new Pose(8, 8, Math.toRadians(0));
-    public static Pose BLUEGOAL = new Pose(8, 138, Math.toRadians(0));
+    public static Pose BLUEGOAL = new Pose(4, 144, Math.toRadians(0));
     public double DISTANCETOBLUEGOAL;
     public double turnage;
+    double botposeY;
+    double botposeX;
+    double botposeHeading;
+    double shootertune;
+    double HoodTune;
+    double limepower;
+    private ServoEx RGBLight = new ServoEx("RGB");
+
+    // red - 0.28
+    // green - 0.500
+    // azure - 0.55
+    //Indigo - 0.666
+    // Violet - 0.722
+
+
 
 
     // 1150 rpm motor has encoder resolution of 145.1
@@ -100,9 +105,13 @@ public class NextTele extends NextFTCOpMode {
 
 
 
+
+
     @Override
     public void onInit() {
+        RGBLight.setPosition(0.722);
         limelight = new LimelightSubsystem(hardwareMap, 20);
+        SubTurret.INSTANCE.resetticks();
         pidTimer.reset();
         PedroComponent.follower().setStartingPose(startingPose);
         telemetry.addData("pos", SubTurret.INSTANCE.getPosition());
@@ -111,9 +120,12 @@ public class NextTele extends NextFTCOpMode {
 
 
 
+
+
     }
     @Override
     public void onWaitForStart(){
+        RGBLight.setPosition(0.722);
         telemetry.addData("pos", SubTurret.INSTANCE.getPosition());
         telemetry.update();
     }
@@ -135,18 +147,15 @@ public class NextTele extends NextFTCOpMode {
 //                Gamepads.gamepad1().rightStickX()
 //        );
 //        driverControlled.schedule();
-        limelight.update();
-        limelight.getLatestResult();
 
 
 
-        Gamepads.gamepad2().x()
-                .whenBecomesTrue(SubShoot.INSTANCE.PIDshot);
-                //.whenBecomesFalse(SubShoot.INSTANCE.PIDstop);
-        //.whenBecomesFalse(SubShoot.INSTANCE.CloseLaunch);
-        Gamepads.gamepad2().y()
-                .whenBecomesTrue(SubTurret.INSTANCE.TestRun2)
-                .whenBecomesFalse(SubTurret.INSTANCE.TestRun);
+
+//        Gamepads.gamepad2().x()
+//                .whenBecomesTrue(SubShoot.INSTANCE.PIDshot);
+//                //.whenBecomesFalse(SubShoot.INSTANCE.PIDstop);
+//        //.whenBecomesFalse(SubShoot.INSTANCE.CloseLaunch);
+
 
 //        Gamepads.gamepad2().a()
 //                .whenBecomesTrue(() -> SubTurret.INSTANCE.AIMER())  // Call the method
@@ -233,35 +242,69 @@ public class NextTele extends NextFTCOpMode {
         double robotHeading = Math.toDegrees(PedroComponent.follower().getHeading());
         double turretTargetAngle = fieldAngleToGoal - robotHeading;
         double CorrectTurning = normalizeAngle(turretTargetAngle);
-        turnage = (CorrectTurning/360) * 145.1 * 3.4;
+        turnage = (CorrectTurning/360) * 145.1 * 3.1;
 
         // turnticks =
 
-
         SubTurret.INSTANCE.setTarget(turnage);
         DISTANCETOBLUEGOAL = PedroComponent.follower().getPose().distanceFrom(BLUEGOAL);
-        telemetry.addData("robotHeading degrees", robotHeading);
-        telemetry.addData("turret turnage", turnage);
-        telemetry.addData("FieldAngle (deg)", fieldAngleToGoal);
-        telemetry.addData("Turret Target (deg)", CorrectTurning);
+//        telemetry.addData("turret turnage", turnage);
         //telemetry.addData("RobotPose", PedroComponent.follower().getPose());
         telemetry.addData("TurretPos", SubTurret.INSTANCE.getPosition());
         telemetry.addData("flywheelvel", SubShoot.INSTANCE.getvel());
-        telemetry.addData("Distance to blue goal", DISTANCETOBLUEGOAL);
-        telemetry.addData("target ticks", SubTurret.INSTANCE.getTarget());
+        //telemetry.addData("Distance to blue goal", DISTANCETOBLUEGOAL);
+        //telemetry.addData("Hood Pos", HoodTune);
+        telemetry.addData("Robot Pose", PedroComponent.follower().getPose());
+        //shootertune = (5.25858 * DISTANCETOBLUEGOAL) + 787.29599;
+        shootertune = (5.25858 * DISTANCETOBLUEGOAL) + 788;
+        SubShoot.INSTANCE.setTargetvelocity(shootertune);
+        SubShoot.INSTANCE.sethoodtune(0.35);
+        SubShoot.INSTANCE.HoodInterpolation().schedule();
+
+
+
         telemetry.update();
-        if (gamepad2.a) {
+//        if (limelight.isTargetFound()){
+//            botposeX = (0.0254 * limelight.getBotposeX()) + 72 ;
+//            botposeY = (0.0254 * limelight.getBotposeZ()) + 72 ;
+//            botposeHeading = Math.toDegrees(limelight.getBotYaw());
+//        }
+
+        if (DISTANCETOBLUEGOAL >= 65.00){
+            HoodTune = 0.35;
+        }else if (DISTANCETOBLUEGOAL < 65.00){
+            HoodTune = 0.8;
+        }
+        if (gamepad2.a ) {
             // Button just pressed - schedule the command with the current target
             SubTurret.INSTANCE.AIMER().schedule();
-        } else if (!gamepad2.a) {
-            // Button released - run TestRun
-            SubTurret.INSTANCE.TestRun.schedule();
+        } if (!gamepad2.a){
+//          SubTurret
         }
 
+        if (gamepad2.x){
+            SubShoot.INSTANCE.setPIDTRUE(true);
+            SubShoot.INSTANCE.InterpolationTuning().schedule();
+        } else if (!gamepad2.x){
+            SubShoot.INSTANCE.setPIDTRUE(false);
+        }
+        if ((Math.abs(SubShoot.INSTANCE.getvel() - shootertune))<= 50 ){
+            RGBLight.setPosition(0.722);
+            telemetry.addData("Velocity reached", true);
+        } else {
+            RGBLight.setPosition(0.28);
+            telemetry.addData("velocity not reached", false);
+        }
+
+
+
     }
+
+
     double normalizeAngle(double angle) {
         while (angle > 180) angle -= 360;
         while (angle < -180) angle += 360;
         return angle;
     }
+
 }

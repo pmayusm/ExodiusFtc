@@ -72,7 +72,8 @@ public class interpolationtest extends NextFTCOpMode {
     public static Pose BLUEGOAL = new Pose(10, 138, Math.toRadians(0));
     public double DISTANCETOBLUEGOAL;
     public double turnage;
-    public double shootertune;
+    public double shootertune = 1000;
+    public double HoodTune = 0.5;
 
 
     // 1150 rpm motor has encoder resolution of 145.1
@@ -208,49 +209,53 @@ public class interpolationtest extends NextFTCOpMode {
 //            ShooterMotor.setPower(motorPower);
 //        }
 
-        if (gamepad2.a) {
-            // Button just pressed - schedule the command with the current target
-            SubTurret.INSTANCE.AIMER().schedule();
-        } else if (!gamepad2.a) {
-            // Button released - run TestRun
-            SubTurret.INSTANCE.TestRun.schedule();
-        }
 
 
 
-        double dx = BLUEGOAL.getX() - PedroComponent.follower().getPose().getX();
-        double dy = BLUEGOAL.getY() - PedroComponent.follower().getPose().getY();
-        double fieldAngleToGoal = Math.toDegrees(Math.atan2(dy, dx));
-        double robotHeading = Math.toDegrees(PedroComponent.follower().getHeading());
-        double turretTargetAngle = fieldAngleToGoal - robotHeading;
-        double CorrectTurning = normalizeAngle(turretTargetAngle);
-        turnage = (CorrectTurning/360) * 145.1 * 3.1;
-        SubTurret.INSTANCE.setTarget(turnage * -1);
+
+
 
         DISTANCETOBLUEGOAL = PedroComponent.follower().getPose().distanceFrom(BLUEGOAL);
 
 
         telemetry.addData("flywheelvel", SubShoot.INSTANCE.getvel());
         telemetry.addData("Distance to blue goal", DISTANCETOBLUEGOAL);
+        telemetry.addData("Hood Pos", SubShoot.INSTANCE.getHoodtune());
         telemetry.addData("target velocity", SubShoot.INSTANCE.getTargetvelocity());
         telemetry.update();
-        //shootertune = 0.0945044 * (Math.pow(DISTANCETOBLUEGOAL, 2)) - 3.75527 * DISTANCETOBLUEGOAL + 1884.5904;
-        shootertune = 0.00206249 * (Math.pow(DISTANCETOBLUEGOAL, 3)) - 0.642804 * (Math.pow(DISTANCETOBLUEGOAL, 2 )) + 68.4677 * DISTANCETOBLUEGOAL - 1083.84987;
-        SubShoot.INSTANCE.setTargetvelocity(shootertune);
 
-//        if (gamepad2.aWasPressed()){
-//            shootertune += 50;
+
+        //y = 5.25858x + 787.29599  SHOOTER SPEED EQ (X = distance from blue goal) (Y = shooter velocity)
+        //shootertune = (5.25858 * DISTANCETOBLUEGOAL) + 787.29599;
+        SubShoot.INSTANCE.setTargetvelocity(shootertune);
+        SubShoot.INSTANCE.sethoodtune(HoodTune);
+        SubShoot.INSTANCE.HoodInterpolation().schedule();
+//        if (DISTANCETOBLUEGOAL >= 65.00){
+//            HoodTune = 0.35;
+//        }else if (DISTANCETOBLUEGOAL < 65.00){
+//            HoodTune = 0.8;
 //        }
-//        if (gamepad2.bWasPressed()){
-//            shootertune -= 50;
-//        }
+
+        if (gamepad2.aWasPressed()){
+            shootertune += 50;
+        }
+        if (gamepad2.bWasPressed()){
+            shootertune -= 50;
+        }
         if (gamepad2.x){
             SubShoot.INSTANCE.setPIDTRUE(true);
             SubShoot.INSTANCE.InterpolationTuning().schedule();
         } else if (!gamepad2.x){
             SubShoot.INSTANCE.setPIDTRUE(false);
         }
-        //0.00206249x^3 - 0.642804x^2 + 68.4677x - 1083.84987
+        if (gamepad2.dpadDownWasPressed()){
+            HoodTune -= 0.05;
+        }
+        if (gamepad2.dpadUpWasPressed()){
+            HoodTune += 0.05;
+        }
+
+
 
     }
     double normalizeAngle(double angle) {
