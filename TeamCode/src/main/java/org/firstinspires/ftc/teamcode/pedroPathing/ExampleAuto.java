@@ -190,7 +190,7 @@ public class ExampleAuto extends OpMode {
      **/
     @Override
     public void loop() {
-        limelight = new LimelightSubsystem(hardwareMap, 20);
+        limelight = new LimelightSubsystem(hardwareMap);
 
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();

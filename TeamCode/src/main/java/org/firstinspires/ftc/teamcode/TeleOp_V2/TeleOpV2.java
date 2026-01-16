@@ -136,7 +136,7 @@ public class TeleOpV2  extends LinearOpMode {
         drive = new MecanumDrive(robot.FrontLeft, robot.FrontRight, robot.BackLeft, robot.BackRight);
         gamepad1Ex = new GamepadEx(gamepad1);
         gamepad2Ex = new GamepadEx(gamepad2);
-        limelight = new LimelightSubsystem(hardwareMap, 20);
+        limelight = new LimelightSubsystem(hardwareMap);
         intake = new Intake(hardwareMap);
         shooter = new Shooter(hardwareMap);
         pidTimer.reset();

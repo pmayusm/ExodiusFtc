@@ -60,7 +60,7 @@ public class TELEFINAL extends OpMode {
     @Override
     public void init() {
         try {
-            limelight = new LimelightSubsystem(hardwareMap, 20);
+            limelight = new LimelightSubsystem(hardwareMap);
             follower = Constants.createFollower(hardwareMap);
             follower.update();
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();

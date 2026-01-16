@@ -33,7 +33,7 @@ public class PEDROTELE extends OpMode {
 
     @Override
     public void init() {
-        limelight = new LimelightSubsystem(hardwareMap, 20);
+        limelight = new LimelightSubsystem(hardwareMap);
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(TESTSTART);
         follower.update();

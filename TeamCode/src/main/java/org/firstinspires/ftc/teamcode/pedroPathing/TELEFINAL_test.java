@@ -58,7 +58,7 @@ public class TELEFINAL_test extends OpMode {
     @Override
     public void init() {
         try {
-            limelight = new LimelightSubsystem(hardwareMap, 20);
+            limelight = new LimelightSubsystem(hardwareMap);
             limelight.switchPipeline(9);
             follower = Constants.createFollower(hardwareMap);
             follower.update();

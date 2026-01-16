@@ -1,10 +1,15 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.hardware.IMU;
+
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+
 import java.util.List;
 
 /**
@@ -14,6 +19,7 @@ import java.util.List;
 public class LimelightSubsystem {
 
     private Limelight3A limelight;
+    private IMU imu;
 
     // Tracking variables
     private double pitchAngle = 0.0;
@@ -22,6 +28,7 @@ public class LimelightSubsystem {
     private int targetAprilTagId;
     private double botposeX;
     private double botposeZ;
+    private double botposeY;
     private double botYaw;
 
     /**
@@ -32,41 +39,37 @@ public class LimelightSubsystem {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(9);
         limelight.start();
+
     }
+
 
     /**
      * Constructor with custom AprilTag ID
      * @param hardwareMap The OpMode's hardwareMap
      * @param aprilTagId The AprilTag ID to track
      */
-    public LimelightSubsystem(HardwareMap hardwareMap, int aprilTagId) {
-        this(hardwareMap);
-        this.targetAprilTagId = aprilTagId;
-    }
+//    public LimelightSubsystem(HardwareMap hardwareMap, int aprilTagId) {
+//        this(hardwareMap);
+//        this.targetAprilTagId = aprilTagId;
+//    }
 
     /**
      * Updates the pitch and yaw angles - MUST be called in OpMode loop
      */
     public void update() {
+
         LLResult result = limelight.getLatestResult();
         Pose3D botPose = result.getBotpose();
 
         if (result != null && result.isValid()) {
-            List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
-
-            // Search for the target AprilTag ID
-            for (LLResultTypes.FiducialResult fiducial : fiducialResults) {
-                if (fiducial.getFiducialId() == targetAprilTagId) {
-
-                    pitchAngle = fiducial.getTargetYDegrees();
-                    yawAngle = fiducial.getTargetXDegrees();
-                    botposeX = botPose.getPosition().x;
-                    botposeZ = botPose.getPosition().z;
-                    botYaw = botPose.getOrientation().getYaw();
-                    targetFound = true;
-                    return;
-                }
-            }
+            pitchAngle = result.getTy();
+            yawAngle = result.getTx();
+            botposeX = botPose.getPosition().x;
+            botposeZ = botPose.getPosition().z;
+            botposeY = botPose.getPosition().y;
+            botYaw = botPose.getOrientation().getYaw();
+            targetFound = true;
+            return;
         }
 
         // No target found
@@ -78,7 +81,7 @@ public class LimelightSubsystem {
      * @return The pitch angle in degrees
      */
     public double getPitchAngle() {
-        return pitchAngle + 46;
+        return pitchAngle;
     }
 
     public double getBotposeX() {
@@ -87,6 +90,9 @@ public class LimelightSubsystem {
 
     public double getBotposeZ() {
         return botposeZ;
+    }
+    public double getBotposeY(){
+        return botposeY;
     }
 
     public double getBotYaw() {
@@ -106,7 +112,6 @@ public class LimelightSubsystem {
      * @return true if target is found, false otherwise
      */
     public boolean isTargetFound() {
-
         return targetFound;
     }
 

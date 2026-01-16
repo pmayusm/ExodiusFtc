@@ -122,7 +122,7 @@ public class blue9Close extends NextFTCOpMode {
 
     @Override
     public void onInit(){
-        limelight = new LimelightSubsystem(hardwareMap, 20);
+        limelight = new LimelightSubsystem(hardwareMap);
         PedroComponent.follower().setStartingPose(startPose);
 
         // Set limelight reference in turret subsystem

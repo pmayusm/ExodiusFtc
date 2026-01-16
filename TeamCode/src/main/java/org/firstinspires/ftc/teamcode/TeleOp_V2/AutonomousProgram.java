@@ -49,8 +49,8 @@ public class AutonomousProgram extends NextFTCOpMode {
     private final Pose ScorePoseBigTriangle = new Pose(55, 90, Math.toRadians(180)); //first scoring spot at the big triangle
     private final Pose FirstIntake = new Pose(20, 82, Math.toRadians(180)); //Ending spot of first stack intake
     private final Pose Gate = new Pose(15, 75, Math.toRadians(180));  // Spot to open the gate
-    private final Pose SecondIntake = new Pose(10, 55, Math.toRadians(180)); //Ending spot of second stack intake
-    private final Pose ThirdIntake = new Pose(10, 35.5, Math.toRadians(180));
+    private final Pose SecondIntake = new Pose(10, 52, Math.toRadians(180)); //Ending spot of second stack intake
+    private final Pose ThirdIntake = new Pose(10, 32, Math.toRadians(180));
     private final Pose ParkPose = new Pose(27, 75, Math.toRadians(270)); //Parking spot at the end of Auto
     private PathChain scorePreload;
     private Path grabPickup1;
@@ -84,7 +84,7 @@ public class AutonomousProgram extends NextFTCOpMode {
         scorePickup2 = new Path(new BezierCurve(SecondIntake, new Pose(30, 35), ScorePoseBigTriangle));
         scorePickup2.setConstantHeadingInterpolation(Math.toRadians(180));
 
-        grabPickup3 = new Path(new BezierCurve(ScorePoseBigTriangle, new Pose(70.3, 28.5), ThirdIntake));
+        grabPickup3 = new Path(new BezierCurve(ScorePoseBigTriangle, new Pose(75, 15), ThirdIntake));
         grabPickup3.setConstantHeadingInterpolation(Math.toRadians(180));
 
         scorePickup3 = new Path(new BezierLine(ThirdIntake, ScorePoseBigTriangle));
@@ -101,7 +101,7 @@ public class AutonomousProgram extends NextFTCOpMode {
                         SubTurret.INSTANCE.AutonAim
                 ),
                 SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.HoldIntake),
-                new Delay(1.7),
+                new Delay(2.2),
                 SubIntake.INSTANCE.KickUp,
                 new Delay(0.2),
                 new FollowPath(grabPickup1),
@@ -117,13 +117,13 @@ public class AutonomousProgram extends NextFTCOpMode {
                 new Delay(0.5),
                 new FollowPath(scorePickup2).and(SubIntake.INSTANCE.StopIntake),
                 SubIntake.INSTANCE.HoldIntake.and(SubIntake.INSTANCE.KickDown),
-                new Delay(1.7),
+                new Delay(2.2),
                 SubIntake.INSTANCE.KickUp,
                 new FollowPath(grabPickup3),
                 new Delay(0.7),
                 new FollowPath(scorePickup3).and(SubIntake.INSTANCE.StopIntake),
                 SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.HoldIntake),
-                new Delay(1.7),
+                new Delay(2.2),
                 SubIntake.INSTANCE.KickUp,
                 new Delay(0.2),
                 new FollowPath(park).and(SubTurret.INSTANCE.TestRun)
@@ -143,7 +143,7 @@ public class AutonomousProgram extends NextFTCOpMode {
 
     @Override
     public void onInit(){
-        limelight = new LimelightSubsystem(hardwareMap, 20);
+        limelight = new LimelightSubsystem(hardwareMap);
         PedroComponent.follower().setStartingPose(startPose);
 
         // Set limelight reference in turret subsystem
@@ -193,6 +193,7 @@ public class AutonomousProgram extends NextFTCOpMode {
 
         SubTurret.INSTANCE.setTarget(turnage);
         telemetry.update();
+
     }
     double normalizeAngle(double angle) {
         while (angle > 180) angle -= 360;

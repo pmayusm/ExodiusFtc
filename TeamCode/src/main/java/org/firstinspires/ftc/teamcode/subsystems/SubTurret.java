@@ -26,6 +26,7 @@ public class SubTurret implements Subsystem {
     // turns 90 degrees to the right
     public Command TestRun3 = new RunToPosition(aimer, -21.7).requires(this);
     public Command AutonAim = new RunToPosition(aimer, -49).requires(this);
+    public Command RedAutonAim = new RunToPosition(aimer, 52).requires(this);
 
     //public Command AIMER = new RunToPosition(aimer, target).requires(this);
     public Command AIMER(){
@@ -38,9 +39,7 @@ public class SubTurret implements Subsystem {
 
         // initialization logic (runs on init)
     }
-    public void resetticks(){
-        TurretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    }
+
     @Override
     public void periodic() {
         // periodic logic (runs every loop)
@@ -48,14 +47,6 @@ public class SubTurret implements Subsystem {
         double error = target - TurretMotor.getCurrentPosition();
         double MIN_POWER = 0.1;
         double TOLERANCE_TICKS = 5;
-        if (Math.abs(error) > TOLERANCE_TICKS) {
-            if (Math.abs(calculatedPower) < MIN_POWER) {
-                calculatedPower = Math.signum(calculatedPower) * MIN_POWER;
-            }
-        }
-        else {
-            calculatedPower = 0; // Stop when close enough
-        }
         TurretMotor.setPower(calculatedPower);
         //TurretMotor.setPower(aimer.calculate(TurretMotor.getState()));
     }

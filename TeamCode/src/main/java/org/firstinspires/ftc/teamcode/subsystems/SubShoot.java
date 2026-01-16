@@ -9,6 +9,7 @@ import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.subsystems.Subsystem;
+import dev.nextftc.hardware.controllable.MotorGroup;
 import dev.nextftc.hardware.controllable.RunToVelocity;
 import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
@@ -21,7 +22,8 @@ public class SubShoot implements Subsystem {
 
     private ServoEx HoodRot = new ServoEx("Hood");
     private MotorEx shooterMotor = new MotorEx("SH");
-    private MotorEx shooterMotor2 = new MotorEx("SH2").reversed();
+    private MotorEx shooterMotor2 = new MotorEx("SH2");
+    private MotorGroup SHOOTERS = new MotorGroup(shooterMotor, shooterMotor2);
     public boolean PIDTRUE;
     double shottune;
     double hoodtune;
@@ -32,22 +34,7 @@ public class SubShoot implements Subsystem {
             .build();
 
 
-    public LambdaCommand Shoot = new LambdaCommand().requires(this)
-            .setStart(() -> {
-                shooterMotor.setPower(1);
-                shooterMotor2.setPower(1);
-            }) // full power
-            .setUpdate(() -> {
-                shooterMotor.setPower(1);
-                shooterMotor2.setPower(1);
-            }) // keep full power
-            .setStop(interrupted ->  {
-                shooterMotor.setPower(0);
-                shooterMotor2.setPower(0);
-            }) // stop motor
-            .setIsDone(() -> false) // never finishes on its own
-            .setInterruptible(true)
-            .named("Shooter Command");
+
     public Command hood1 = new SetPosition(HoodRot, 0).requires(this);
     public Command HoldShoot = new SetPower(shooterMotor, 1).requires(this);
     public Command HoldShoot2 = new SetPower(shooterMotor2, 1).requires(this);
@@ -68,7 +55,7 @@ public class SubShoot implements Subsystem {
     }
 
     public double getvel(){
-        return shooterMotor.getVelocity();
+        return SHOOTERS.getVelocity();
     }
     public void setTargetvelocity(double targvel){
 
@@ -91,6 +78,7 @@ public class SubShoot implements Subsystem {
 
     @Override
     public void initialize() {
+        HoodRot.setPosition(0.35);
         // initialization logic (runs on init)
 
         //shooterMotor.getMotor().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -99,10 +87,11 @@ public class SubShoot implements Subsystem {
     public void periodic() {
         // periodic logic (runs every loop)
         if (PIDTRUE){
-            shooterMotor.setPower(controlSystem.calculate(shooterMotor.getState()));
+            SHOOTERS.setPower(controlSystem.calculate(SHOOTERS.getState()));
+            //shooterMotor.setPower(controlSystem.calculate(shooterMotor.getState()));
         }
         if (!PIDTRUE){
-            shooterMotor.setPower(0);
+            SHOOTERS.setPower(0);
         }
 
 

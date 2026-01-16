@@ -63,6 +63,7 @@ public class NextTele extends NextFTCOpMode {
     double HoodTune;
     double limepower;
     private ServoEx RGBLight = new ServoEx("RGB");
+    private ServoEx RGBLight2 = new ServoEx("RGB2");
 
     // red - 0.28
     // green - 0.500
@@ -109,9 +110,10 @@ public class NextTele extends NextFTCOpMode {
 
     @Override
     public void onInit() {
+        telemetry.setMsTransmissionInterval(11);
         RGBLight.setPosition(0.722);
-        limelight = new LimelightSubsystem(hardwareMap, 20);
-        SubTurret.INSTANCE.resetticks();
+        RGBLight2.setPosition(0.722);
+        limelight = new LimelightSubsystem(hardwareMap);
         pidTimer.reset();
         PedroComponent.follower().setStartingPose(startingPose);
         telemetry.addData("pos", SubTurret.INSTANCE.getPosition());
@@ -182,16 +184,23 @@ public class NextTele extends NextFTCOpMode {
                 );
         Gamepads.gamepad1().x()
                 .whenBecomesTrue(SubShoot.INSTANCE.hood1);
-
-
-
-
     }
     @Override
     public void onUpdate(){
+        PedroComponent.follower().update();
         limelight.getLatestResult();
         limelight.update();
         boolean targetVisible = limelight.isTargetFound();
+        if (targetVisible){
+            telemetry.addData("tag visible", "true");
+            telemetry.addData("LimeX",( limelight.getBotposeX() * 39.37) * -1 + 72);
+            telemetry.addData("LimeZ", (limelight.getBotposeZ()* 39.37) * -1 + 72);
+            telemetry.addData("LimeY", (limelight.getBotposeY()* 39.37) * -1 + 72);
+            telemetry.addData("LimeYaw", limelight.getBotYaw());
+        }
+        else {
+            telemetry.addData("tag visible", "false");
+        }
 
 
 //        Gamepads.gamepad2().a()
@@ -255,6 +264,8 @@ public class NextTele extends NextFTCOpMode {
         //telemetry.addData("Distance to blue goal", DISTANCETOBLUEGOAL);
         //telemetry.addData("Hood Pos", HoodTune);
         telemetry.addData("Robot Pose", PedroComponent.follower().getPose());
+        telemetry.addData("CorrectTurningAngle", CorrectTurning);
+
         //shootertune = (5.25858 * DISTANCETOBLUEGOAL) + 787.29599;
         shootertune = (5.25858 * DISTANCETOBLUEGOAL) + 788;
         SubShoot.INSTANCE.setTargetvelocity(shootertune);
@@ -264,11 +275,11 @@ public class NextTele extends NextFTCOpMode {
 
 
         telemetry.update();
-//        if (limelight.isTargetFound()){
-//            botposeX = (0.0254 * limelight.getBotposeX()) + 72 ;
-//            botposeY = (0.0254 * limelight.getBotposeZ()) + 72 ;
-//            botposeHeading = Math.toDegrees(limelight.getBotYaw());
-//        }
+        if (targetVisible){
+            botposeX = (-39.37 * limelight.getBotposeX()) + 72 ;
+            botposeY = (-39.37 * limelight.getBotposeZ()) + 72 ;
+            botposeHeading = limelight.getBotYaw() - 90;
+        }
 
         if (DISTANCETOBLUEGOAL >= 65.00){
             HoodTune = 0.35;
@@ -278,8 +289,6 @@ public class NextTele extends NextFTCOpMode {
         if (gamepad2.a ) {
             // Button just pressed - schedule the command with the current target
             SubTurret.INSTANCE.AIMER().schedule();
-        } if (!gamepad2.a){
-//          SubTurret
         }
 
         if (gamepad2.x){
@@ -290,18 +299,29 @@ public class NextTele extends NextFTCOpMode {
         }
         if ((Math.abs(SubShoot.INSTANCE.getvel() - shootertune))<= 50 ){
             RGBLight.setPosition(0.722);
+            RGBLight2.setPosition(0.722);
             telemetry.addData("Velocity reached", true);
         } else {
             RGBLight.setPosition(0.28);
+            RGBLight2.setPosition(0.28);
             telemetry.addData("velocity not reached", false);
         }
+//        if (gamepad1.dpadDownWasPressed()){
+//            PedroComponent.follower().setPose(startingPose);
+//        }
 
+        if (targetVisible && gamepad1.dpadDownWasPressed()){
+            PedroComponent.follower().setPose(getRobotPoseFromCamera());
+        }
 
-
+    }
+    private Pose getRobotPoseFromCamera(){
+        return new Pose(botposeX, botposeY, Math.toRadians(botposeHeading));
     }
 
 
     double normalizeAngle(double angle) {
+        angle = -1 * (180 - angle);
         while (angle > 180) angle -= 360;
         while (angle < -180) angle += 360;
         return angle;

@@ -92,7 +92,7 @@ public class NextTeleRed extends NextFTCOpMode {
 
     @Override
     public void onInit() {
-        limelight = new LimelightSubsystem(hardwareMap, 24);
+        limelight = new LimelightSubsystem(hardwareMap);
         SubShoot.INSTANCE.initialize();
         SubIntake.INSTANCE.initialize();
         TurretMotor.zeroed();

@@ -110,7 +110,7 @@ public class interpolationtest extends NextFTCOpMode {
 
     @Override
     public void onInit() {
-        limelight = new LimelightSubsystem(hardwareMap, 20);
+        limelight = new LimelightSubsystem(hardwareMap);
         SubShoot.INSTANCE.initialize();
         SubIntake.INSTANCE.initialize();
         SubTurret.INSTANCE.initialize();
