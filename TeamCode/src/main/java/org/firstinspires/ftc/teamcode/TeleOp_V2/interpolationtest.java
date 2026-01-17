@@ -126,7 +126,6 @@ public class interpolationtest extends NextFTCOpMode {
     }
     @Override
     public void onStartButtonPressed() {
-        TurretMotor.zeroed();
         DriverControlledCommand driverControlled = new PedroDriverControlled(
                 Gamepads.gamepad1().leftStickY().negate(),
                 Gamepads.gamepad1().leftStickX().negate(),

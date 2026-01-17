@@ -17,7 +17,7 @@ public class SubTurret implements Subsystem {
     //145.1 ticks per revolution
     // 3.1 : 1 gear ratio
     private ControlSystem aimer = ControlSystem.builder()
-            .posPid(0.03, 0, 0.001)
+            .posPid(0.028, 0, 0.002)
             .basicFF(0, 0.006, 0.02)
             .build();
 

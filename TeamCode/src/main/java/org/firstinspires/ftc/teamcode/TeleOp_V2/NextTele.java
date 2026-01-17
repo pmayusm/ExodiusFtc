@@ -53,7 +53,7 @@ public class NextTele extends NextFTCOpMode {
     private LimelightSubsystem limelight;
 
     public static Pose startingPose = new Pose(8, 8, Math.toRadians(0));
-    public static Pose BLUEGOAL = new Pose(4, 144, Math.toRadians(0));
+    public static Pose BLUEGOAL = new Pose(8, 139, Math.toRadians(0));
     public double DISTANCETOBLUEGOAL;
     public double turnage;
     double botposeY;
@@ -251,7 +251,7 @@ public class NextTele extends NextFTCOpMode {
         double robotHeading = Math.toDegrees(PedroComponent.follower().getHeading());
         double turretTargetAngle = fieldAngleToGoal - robotHeading;
         double CorrectTurning = normalizeAngle(turretTargetAngle);
-        turnage = (CorrectTurning/360) * 145.1 * 3.1;
+        turnage = (CorrectTurning/360) * 145.1 * 3.4;
 
         // turnticks =
 
@@ -265,11 +265,13 @@ public class NextTele extends NextFTCOpMode {
         //telemetry.addData("Hood Pos", HoodTune);
         telemetry.addData("Robot Pose", PedroComponent.follower().getPose());
         telemetry.addData("CorrectTurningAngle", CorrectTurning);
-
-        //shootertune = (5.25858 * DISTANCETOBLUEGOAL) + 787.29599;
-        shootertune = (5.25858 * DISTANCETOBLUEGOAL) + 788;
+        telemetry.addData("targ vel", SubShoot.INSTANCE.getTargetvelocity());
+        // shooter vel :y = 0.000140673x^3 - 0.0615182x^2 + 12.28422x + 469.8692
+        // hood pos: y = -0.00000594867x^3 + 0.00178147x^2 - 0.172839x + 5.77029
+        shootertune = 0.000140673 * Math.pow(DISTANCETOBLUEGOAL, 3) - 0.0615182 * Math.pow(DISTANCETOBLUEGOAL, 2) + 12.28422 * DISTANCETOBLUEGOAL + 429.8692;
+        HoodTune = -0.00000594867 * Math.pow(DISTANCETOBLUEGOAL, 3) + 0.00178147 * Math.pow(DISTANCETOBLUEGOAL, 2) - 0.172839 * DISTANCETOBLUEGOAL+ 5.77029;
         SubShoot.INSTANCE.setTargetvelocity(shootertune);
-        SubShoot.INSTANCE.sethoodtune(0.35);
+        SubShoot.INSTANCE.sethoodtune(HoodTune);
         SubShoot.INSTANCE.HoodInterpolation().schedule();
 
 
@@ -281,11 +283,7 @@ public class NextTele extends NextFTCOpMode {
             botposeHeading = limelight.getBotYaw() - 90;
         }
 
-        if (DISTANCETOBLUEGOAL >= 65.00){
-            HoodTune = 0.35;
-        }else if (DISTANCETOBLUEGOAL < 65.00){
-            HoodTune = 0.8;
-        }
+
         if (gamepad2.a ) {
             // Button just pressed - schedule the command with the current target
             SubTurret.INSTANCE.AIMER().schedule();
