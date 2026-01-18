@@ -29,8 +29,8 @@ public class SubShoot implements Subsystem {
     double hoodtune;
 
     private ControlSystem controlSystem = ControlSystem.builder()
-            .velPid(0.1, 0, 0.01)
-            .basicFF(0.004, 0.3, 0)
+            .velPid(0.08, 0, 0.015)
+            .basicFF(0.004, 0.03, 0)
             .build();
 
 
@@ -44,7 +44,7 @@ public class SubShoot implements Subsystem {
     public Command ReverseShoot2 = new SetPower(shooterMotor2, -1).requires(this);
     public Command AutoCloseShoot = new SetPower(shooterMotor, 0.83).requires(this);
     public Command AutoCloseShoot2 = new SetPower(shooterMotor2, 0.98).requires(this);
-    public Command PIDshot = new RunToVelocity(controlSystem, 1180, 30).requires(this);
+    public Command PIDshot = new RunToVelocity(controlSystem, 1100, 30).requires(this);
     public Command PIDstop = new RunToVelocity(controlSystem, 0, 2000).requires(this);
 
     public Command InterpolationTuning(){

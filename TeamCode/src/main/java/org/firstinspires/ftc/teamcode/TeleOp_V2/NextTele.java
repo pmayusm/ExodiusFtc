@@ -197,6 +197,7 @@ public class NextTele extends NextFTCOpMode {
             telemetry.addData("LimeZ", (limelight.getBotposeZ()* 39.37) * -1 + 72);
             telemetry.addData("LimeY", (limelight.getBotposeY()* 39.37) * -1 + 72);
             telemetry.addData("LimeYaw", limelight.getBotYaw());
+            telemetry.addData("tx", limelight.getYawAngle());
         }
         else {
             telemetry.addData("tag visible", "false");
@@ -251,7 +252,7 @@ public class NextTele extends NextFTCOpMode {
         double robotHeading = Math.toDegrees(PedroComponent.follower().getHeading());
         double turretTargetAngle = fieldAngleToGoal - robotHeading;
         double CorrectTurning = normalizeAngle(turretTargetAngle);
-        turnage = (CorrectTurning/360) * 145.1 * 3.4;
+        turnage = (CorrectTurning/360) * 145.1 * 3.1;
 
         // turnticks =
 
@@ -266,6 +267,7 @@ public class NextTele extends NextFTCOpMode {
         telemetry.addData("Robot Pose", PedroComponent.follower().getPose());
         telemetry.addData("CorrectTurningAngle", CorrectTurning);
         telemetry.addData("targ vel", SubShoot.INSTANCE.getTargetvelocity());
+
         // shooter vel :y = 0.000140673x^3 - 0.0615182x^2 + 12.28422x + 469.8692
         // hood pos: y = -0.00000594867x^3 + 0.00178147x^2 - 0.172839x + 5.77029
         shootertune = 0.000140673 * Math.pow(DISTANCETOBLUEGOAL, 3) - 0.0615182 * Math.pow(DISTANCETOBLUEGOAL, 2) + 12.28422 * DISTANCETOBLUEGOAL + 429.8692;
@@ -304,11 +306,11 @@ public class NextTele extends NextFTCOpMode {
             RGBLight2.setPosition(0.28);
             telemetry.addData("velocity not reached", false);
         }
-//        if (gamepad1.dpadDownWasPressed()){
-//            PedroComponent.follower().setPose(startingPose);
-//        }
+        if (gamepad1.dpadDownWasPressed()){
+            PedroComponent.follower().setPose(startingPose);
+        }
 
-        if (targetVisible && gamepad1.dpadDownWasPressed()){
+        if (targetVisible && gamepad1.leftBumperWasPressed()){
             PedroComponent.follower().setPose(getRobotPoseFromCamera());
         }
 

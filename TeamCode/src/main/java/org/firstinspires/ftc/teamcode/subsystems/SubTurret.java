@@ -17,7 +17,7 @@ public class SubTurret implements Subsystem {
     //145.1 ticks per revolution
     // 3.1 : 1 gear ratio
     private ControlSystem aimer = ControlSystem.builder()
-            .posPid(0.028, 0, 0.002)
+            .posPid(0.03, 0, 0.001)
             .basicFF(0, 0.006, 0.02)
             .build();
 
@@ -25,7 +25,7 @@ public class SubTurret implements Subsystem {
     public Command TestRun2 = new RunToPosition(aimer, 112.4525).requires(this);
     // turns 90 degrees to the right
     public Command TestRun3 = new RunToPosition(aimer, -21.7).requires(this);
-    public Command AutonAim = new RunToPosition(aimer, -49).requires(this);
+    public Command AutonAim = new RunToPosition(aimer, 155).requires(this);
     public Command RedAutonAim = new RunToPosition(aimer, 52).requires(this);
 
     //public Command AIMER = new RunToPosition(aimer, target).requires(this);
@@ -44,9 +44,6 @@ public class SubTurret implements Subsystem {
     public void periodic() {
         // periodic logic (runs every loop)
         double calculatedPower = aimer.calculate(TurretMotor.getState());
-        double error = target - TurretMotor.getCurrentPosition();
-        double MIN_POWER = 0.1;
-        double TOLERANCE_TICKS = 5;
         TurretMotor.setPower(calculatedPower);
         //TurretMotor.setPower(aimer.calculate(TurretMotor.getState()));
     }

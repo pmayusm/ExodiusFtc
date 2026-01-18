@@ -46,11 +46,11 @@ public class AutonomousProgram extends NextFTCOpMode {
     double DISTANCETOBLUEGOAL;
     double HoodTune;
     private final Pose startPose = new Pose(21, 123.5, Math.toRadians(235)); //starting pose
-    private final Pose ScorePoseBigTriangle = new Pose(55, 90, Math.toRadians(180)); //first scoring spot at the big triangle
+    private final Pose ScorePoseBigTriangle = new Pose(55, 90, Math.toRadians(195)); //first scoring spot at the big triangle
     private final Pose FirstIntake = new Pose(20, 82, Math.toRadians(180)); //Ending spot of first stack intake
     private final Pose Gate = new Pose(15, 75, Math.toRadians(180));  // Spot to open the gate
-    private final Pose SecondIntake = new Pose(10, 52, Math.toRadians(180)); //Ending spot of second stack intake
-    private final Pose ThirdIntake = new Pose(10, 32, Math.toRadians(180));
+    private final Pose SecondIntake = new Pose(10, 59, Math.toRadians(180)); //Ending spot of second stack intake
+    private final Pose ThirdIntake = new Pose(10, 35, Math.toRadians(180));
     private final Pose ParkPose = new Pose(27, 75, Math.toRadians(270)); //Parking spot at the end of Auto
     private PathChain scorePreload;
     private Path grabPickup1;
@@ -78,17 +78,17 @@ public class AutonomousProgram extends NextFTCOpMode {
         scorePickup1 = new Path(new BezierLine(Gate, ScorePoseBigTriangle));
         scorePickup1.setLinearHeadingInterpolation(Gate.getHeading(), ScorePoseBigTriangle.getHeading());
 
-        grabPickup2 = new Path(new BezierCurve(ScorePoseBigTriangle,new Pose(60.000, 60.000), new Pose(47.000, 56.000),SecondIntake));
-        grabPickup2.setConstantHeadingInterpolation(Math.toRadians(180));
+        grabPickup2 = new Path(new BezierCurve(ScorePoseBigTriangle,new Pose(70.000, 58.000), new Pose(47.000, 50.000),SecondIntake));
+        grabPickup2.setLinearHeadingInterpolation(ScorePoseBigTriangle.getHeading(), SecondIntake.getHeading());
 
         scorePickup2 = new Path(new BezierCurve(SecondIntake, new Pose(30, 35), ScorePoseBigTriangle));
-        scorePickup2.setConstantHeadingInterpolation(Math.toRadians(180));
+        scorePickup2.setLinearHeadingInterpolation(SecondIntake.getHeading(), ScorePoseBigTriangle.getHeading());
 
         grabPickup3 = new Path(new BezierCurve(ScorePoseBigTriangle, new Pose(75, 15), ThirdIntake));
-        grabPickup3.setConstantHeadingInterpolation(Math.toRadians(180));
+        grabPickup3.setLinearHeadingInterpolation(ScorePoseBigTriangle.getHeading(), ThirdIntake.getHeading());
 
         scorePickup3 = new Path(new BezierLine(ThirdIntake, ScorePoseBigTriangle));
-        scorePickup3.setConstantHeadingInterpolation(Math.toRadians(180));
+        scorePickup3.setLinearHeadingInterpolation(ThirdIntake.getHeading(), ScorePoseBigTriangle.getHeading());
 
         park = new Path(new BezierLine(ScorePoseBigTriangle, ParkPose));
         park.setLinearHeadingInterpolation(ScorePoseBigTriangle.getHeading(), ParkPose.getHeading());
@@ -97,11 +97,9 @@ public class AutonomousProgram extends NextFTCOpMode {
 
     private Command autonomousRoutine() {
         return new SequentialGroup(
-                new FollowPath(scorePreload, false).asDeadline(
-                        SubTurret.INSTANCE.AutonAim
-                ),
+                new FollowPath(scorePreload, false).and(SubTurret.INSTANCE.AutonAim),
                 SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.HoldIntake),
-                new Delay(2.2),
+                new Delay(1.8),
                 SubIntake.INSTANCE.KickUp,
                 new Delay(0.2),
                 new FollowPath(grabPickup1),
@@ -110,20 +108,20 @@ public class AutonomousProgram extends NextFTCOpMode {
                 new Delay(0.2),
                 new FollowPath(scorePickup1).and(SubIntake.INSTANCE.StopIntake),
                 SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.HoldIntake),
-                new Delay(1.7),
+                new Delay(1.8),
                 SubIntake.INSTANCE.KickUp,
                 new Delay(0.2),
                 new FollowPath(grabPickup2),
                 new Delay(0.5),
                 new FollowPath(scorePickup2).and(SubIntake.INSTANCE.StopIntake),
                 SubIntake.INSTANCE.HoldIntake.and(SubIntake.INSTANCE.KickDown),
-                new Delay(2.2),
+                new Delay(1.8),
                 SubIntake.INSTANCE.KickUp,
                 new FollowPath(grabPickup3),
                 new Delay(0.7),
                 new FollowPath(scorePickup3).and(SubIntake.INSTANCE.StopIntake),
                 SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.HoldIntake),
-                new Delay(2.2),
+                new Delay(1.8),
                 SubIntake.INSTANCE.KickUp,
                 new Delay(0.2),
                 new FollowPath(park).and(SubTurret.INSTANCE.TestRun)
@@ -145,19 +143,15 @@ public class AutonomousProgram extends NextFTCOpMode {
     public void onInit(){
         limelight = new LimelightSubsystem(hardwareMap);
         PedroComponent.follower().setStartingPose(startPose);
-
         // Set limelight reference in turret subsystem
-
         Initialize().schedule();
     }
 
     @Override
     public void onStartButtonPressed() {
-
         buildPaths();
         follower().update();
         autonomousRoutine().schedule();
-
     }
     @Override
     public void onUpdate(){
@@ -166,8 +160,7 @@ public class AutonomousProgram extends NextFTCOpMode {
 
         telemetry.addData("Hood Pos", SubShoot.INSTANCE.getHoodtune());
         telemetry.addData("Flywheel vel", SubShoot.INSTANCE.getvel());
-        telemetry.addData("TargetFlywheel", SubShoot.INSTANCE.getTargetvelocity());
-        telemetry.addData("turre pos", SubTurret.INSTANCE.getPosition());
+        telemetry.addData("turret pos", SubTurret.INSTANCE.getPosition());
         telemetry.addData("Robot Pos", PedroComponent.follower().getPose().toString());
         DISTANCETOBLUEGOAL = PedroComponent.follower().getPose().distanceFrom(BLUEGOAL);
         double dx = BLUEGOAL.getX() - PedroComponent.follower().getPose().getX();
@@ -176,19 +169,16 @@ public class AutonomousProgram extends NextFTCOpMode {
         double robotHeading = Math.toDegrees(PedroComponent.follower().getHeading());
         double turretTargetAngle = fieldAngleToGoal - robotHeading;
         double CorrectTurning = normalizeAngle(turretTargetAngle);
-        turnage = (CorrectTurning/360) * 145.1 * 3.1;
+        turnage = (CorrectTurning/360) * 145.1 * 3.4;
         SubTurret.INSTANCE.setTarget(turnage);
         shootertune = (5.25858 * DISTANCETOBLUEGOAL) + 788;
         SubShoot.INSTANCE.setTargetvelocity(shootertune);
         SubShoot.INSTANCE.sethoodtune(HoodTune);
+        HoodTune = -0.00000594867 * Math.pow(DISTANCETOBLUEGOAL, 3) + 0.00178147 * Math.pow(DISTANCETOBLUEGOAL, 2) - 0.172839 * DISTANCETOBLUEGOAL+ 5.77029;
         SubShoot.INSTANCE.HoodInterpolation().schedule();
+
         //SubShoot.INSTANCE.InterpolationTuning().schedule();
         //SubTurret.INSTANCE.AIMER().schedule();
-        if (DISTANCETOBLUEGOAL >= 65.00){
-            HoodTune = 0.35;
-        }else if (DISTANCETOBLUEGOAL < 65.00){
-            HoodTune = 0.8;
-        }
         // turnticks =
 
         SubTurret.INSTANCE.setTarget(turnage);
@@ -196,6 +186,7 @@ public class AutonomousProgram extends NextFTCOpMode {
 
     }
     double normalizeAngle(double angle) {
+        angle = -1 * (180 - angle);
         while (angle > 180) angle -= 360;
         while (angle < -180) angle += 360;
         return angle;
