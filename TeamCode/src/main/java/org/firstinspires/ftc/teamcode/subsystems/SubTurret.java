@@ -8,6 +8,7 @@ import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.hardware.controllable.RunToPosition;
 import dev.nextftc.hardware.impl.MotorEx;
 
+
 public class SubTurret implements Subsystem {
     public static final SubTurret INSTANCE = new SubTurret();
     private SubTurret(){}
@@ -27,6 +28,8 @@ public class SubTurret implements Subsystem {
     public Command TestRun3 = new RunToPosition(aimer, -21.7).requires(this);
     public Command AutonAim = new RunToPosition(aimer, 155).requires(this);
     public Command RedAutonAim = new RunToPosition(aimer, 52).requires(this);
+    public Command AutonAimFar = new RunToPosition(aimer, 140).requires(this);
+    public Command AutonFarAim1 = new RunToPosition(aimer, 143).requires(this);
 
     //public Command AIMER = new RunToPosition(aimer, target).requires(this);
     public Command AIMER(){
@@ -35,10 +38,13 @@ public class SubTurret implements Subsystem {
 
     @Override
     public void initialize() {
-        TurretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
+        //TurretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         // initialization logic (runs on init)
     }
+    public void ResetTurret(){
+        TurretMotor.getMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
 
     @Override
     public void periodic() {

@@ -10,6 +10,7 @@ import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.hardware.controllable.MotorGroup;
+import dev.nextftc.hardware.controllable.RunToPosition;
 import dev.nextftc.hardware.controllable.RunToVelocity;
 import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
@@ -29,7 +30,7 @@ public class SubShoot implements Subsystem {
     double hoodtune;
 
     private ControlSystem controlSystem = ControlSystem.builder()
-            .velPid(0.08, 0, 0.015)
+            .velPid(0.07, 0, 0.017)
             .basicFF(0.004, 0.03, 0)
             .build();
 
@@ -44,7 +45,9 @@ public class SubShoot implements Subsystem {
     public Command ReverseShoot2 = new SetPower(shooterMotor2, -1).requires(this);
     public Command AutoCloseShoot = new SetPower(shooterMotor, 0.83).requires(this);
     public Command AutoCloseShoot2 = new SetPower(shooterMotor2, 0.98).requires(this);
-    public Command PIDshot = new RunToVelocity(controlSystem, 1100, 30).requires(this);
+    public Command PIDshot = new RunToVelocity(controlSystem, 1080, 30).requires(this);
+    public Command PIDfarShot = new RunToVelocity(controlSystem, 1350, 30).requires(this);
+
     public Command PIDstop = new RunToVelocity(controlSystem, 0, 2000).requires(this);
 
     public Command InterpolationTuning(){

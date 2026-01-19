@@ -9,12 +9,17 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SubIntake;
 import org.firstinspires.ftc.teamcode.subsystems.SubShoot;
 import org.firstinspires.ftc.teamcode.subsystems.SubTurret;
-import org.firstinspires.ftc.teamcode.subsystems.TurretPIDSubsystem;
+import com.qualcomm.robotcore.util.ReadWriteFile;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.delays.Delay;
@@ -27,6 +32,9 @@ import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
+import androidx.annotation.RequiresPermission;
+
+
 @Autonomous(name = "NextFTC Autonomous Program Java")
 public class AutonomousProgram extends NextFTCOpMode {
     private LimelightSubsystem limelight;
@@ -38,15 +46,18 @@ public class AutonomousProgram extends NextFTCOpMode {
         );
     }
 
-    //private Follower follower;
+
+    private List<Integer> routine;
     public static Pose BLUEGOAL = new Pose(4, 144, Math.toRadians(0));
+    public double turretPosition;
+    public int roundedPos;
 
     double turnage;
     double shootertune;
     double DISTANCETOBLUEGOAL;
     double HoodTune;
     private final Pose startPose = new Pose(21, 123.5, Math.toRadians(235)); //starting pose
-    private final Pose ScorePoseBigTriangle = new Pose(55, 90, Math.toRadians(195)); //first scoring spot at the big triangle
+    private final Pose ScorePoseBigTriangle = new Pose(55, 90, Math.toRadians(197)); //first scoring spot at the big triangle
     private final Pose FirstIntake = new Pose(20, 82, Math.toRadians(180)); //Ending spot of first stack intake
     private final Pose Gate = new Pose(15, 75, Math.toRadians(180));  // Spot to open the gate
     private final Pose SecondIntake = new Pose(10, 59, Math.toRadians(180)); //Ending spot of second stack intake
@@ -141,6 +152,8 @@ public class AutonomousProgram extends NextFTCOpMode {
 
     @Override
     public void onInit(){
+        routine = new ArrayList<>();
+        SubTurret.INSTANCE.ResetTurret();
         limelight = new LimelightSubsystem(hardwareMap);
         PedroComponent.follower().setStartingPose(startPose);
         // Set limelight reference in turret subsystem
@@ -149,19 +162,21 @@ public class AutonomousProgram extends NextFTCOpMode {
 
     @Override
     public void onStartButtonPressed() {
+        routine.add(19);
         buildPaths();
-        follower().update();
+        PedroComponent.follower().update();
         autonomousRoutine().schedule();
     }
     @Override
     public void onUpdate(){
         SubShoot.INSTANCE.setPIDTRUE(true);
         SubShoot.INSTANCE.PIDshot.schedule();
-
+        telemetry.addData("routine", routine);
         telemetry.addData("Hood Pos", SubShoot.INSTANCE.getHoodtune());
         telemetry.addData("Flywheel vel", SubShoot.INSTANCE.getvel());
         telemetry.addData("turret pos", SubTurret.INSTANCE.getPosition());
         telemetry.addData("Robot Pos", PedroComponent.follower().getPose().toString());
+        telemetry.addData("turret Position", SubTurret.INSTANCE.getPosition());
         DISTANCETOBLUEGOAL = PedroComponent.follower().getPose().distanceFrom(BLUEGOAL);
         double dx = BLUEGOAL.getX() - PedroComponent.follower().getPose().getX();
         double dy = BLUEGOAL.getY() - PedroComponent.follower().getPose().getY();
@@ -183,6 +198,16 @@ public class AutonomousProgram extends NextFTCOpMode {
 
         SubTurret.INSTANCE.setTarget(turnage);
         telemetry.update();
+
+    }
+    @Override public void onStop() {
+        turretPosition = SubTurret.INSTANCE.getPosition();
+        roundedPos = (int) turretPosition;
+        routine.add(roundedPos);
+        String routineString = routine.toString();
+        routineString = routineString.substring(1, routineString.length() -1);
+        File turretpos = AppUtil.getInstance().getSettingsFile("turretpos.txt");
+        ReadWriteFile.writeFile(turretpos, routineString);
 
     }
     double normalizeAngle(double angle) {
