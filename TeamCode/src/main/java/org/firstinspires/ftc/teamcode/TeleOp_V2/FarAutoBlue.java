@@ -40,11 +40,15 @@ public class FarAutoBlue extends NextFTCOpMode {
     public final Pose startPose = new Pose(56, 8, Math.toRadians(180));
     public static Pose BLUEGOAL = new Pose(4, 144, Math.toRadians(0));
 
-    public final Pose FirstIntake = new Pose(10, 9, Math.toRadians(180));
+    public final Pose FirstIntake = new Pose(10, 10, Math.toRadians(210));
     public final Pose ScorePoseFar = new Pose(50, 12, Math.toRadians(180));
+    private final Pose IntakeStack = new Pose(10, 35, Math.toRadians(180));
     private Path grabPickup1;
     private Path hesiPickup;
     private Path scorePickup1;
+    private Path grabPickup2;
+    private Path grabStack;
+    private Path scoreStack;
 
     public void buildPaths(){
 
@@ -56,45 +60,53 @@ public class FarAutoBlue extends NextFTCOpMode {
 
         scorePickup1 = new Path(new BezierLine(FirstIntake, ScorePoseFar));
         scorePickup1.setLinearHeadingInterpolation(FirstIntake.getHeading(), ScorePoseFar.getHeading());
+
+        grabStack = new Path(new BezierCurve(ScorePoseFar, new Pose(52, 42), IntakeStack));
+        grabStack.setLinearHeadingInterpolation(ScorePoseFar.getHeading(), IntakeStack.getHeading());
+
+        scoreStack = new Path(new BezierLine(IntakeStack, ScorePoseFar));
+        scoreStack.setLinearHeadingInterpolation(IntakeStack.getHeading(), ScorePoseFar.getHeading());
     }
     private Command autonomousRoutine(){
         return new SequentialGroup(
             SubTurret.INSTANCE.AutonFarAim1,
             new Delay(2.5),
             SubIntake.INSTANCE.HoldIntake.and(SubIntake.INSTANCE.KickDown),
-            new Delay(1.5),
+            new Delay(2),
             SubIntake.INSTANCE.KickUp,
             new Delay(0.3),
-            new FollowPath(grabPickup1).and(SubTurret.INSTANCE.AutonAimFar),
-            new Delay(0.5),
-            new FollowPath(scorePickup1),
-            new Delay(0.5),
+            new FollowPath(grabStack).and(SubTurret.INSTANCE.AutonAimFar),
+            new Delay(0.3),
+            new FollowPath(scoreStack),
+            new Delay(0.2),
             SubIntake.INSTANCE.KickDown,
-            new Delay(1.5),
+            new Delay(2),
             SubIntake.INSTANCE.KickUp,
             //go back again
+            new Delay(0.2),
             new FollowPath(grabPickup1),
-            new Delay(0.5),
+            //new Delay(0.5),
             new FollowPath(scorePickup1),
-            new Delay(0.5),
+            new Delay(0.2),
             SubIntake.INSTANCE.KickDown,
-            new Delay(1.5),
+            new Delay(2),
+            SubIntake.INSTANCE.KickUp,
+            new Delay(0.2),
+            // go back again
+            new FollowPath(grabPickup1),
+            //new Delay(0.5),
+            new FollowPath(scorePickup1),
+            new Delay(0.2),
+            SubIntake.INSTANCE.KickDown,
+            new Delay(2),
             SubIntake.INSTANCE.KickUp,
             // go back again
             new FollowPath(grabPickup1),
-            new Delay(0.5),
+            //new Delay(0.5),
             new FollowPath(scorePickup1),
-            new Delay(0.5),
+            new Delay(0.2),
             SubIntake.INSTANCE.KickDown,
-            new Delay(1.5),
-            SubIntake.INSTANCE.KickUp,
-            // go back again
-            new FollowPath(grabPickup1),
-            new Delay(0.5),
-            new FollowPath(scorePickup1),
-            new Delay(0.5),
-            SubIntake.INSTANCE.KickDown,
-            new Delay(1.5),
+            new Delay(2),
             SubIntake.INSTANCE.KickUp
         );
     }

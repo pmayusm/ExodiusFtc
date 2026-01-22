@@ -75,9 +75,11 @@ public class AutonomousProgram extends NextFTCOpMode {
 
     public void buildPaths() {
 
+
         scorePreload = PedroComponent.follower().pathBuilder()
                 .addPath(new BezierLine(startPose, ScorePoseBigTriangle))
                 .setLinearHeadingInterpolation(startPose.getHeading(), ScorePoseBigTriangle.getHeading())
+                .setTimeoutConstraint(300)
                 .build();
 
         grabPickup1 = new Path(new BezierCurve(ScorePoseBigTriangle, new Pose(55, 70), FirstIntake));
@@ -114,7 +116,7 @@ public class AutonomousProgram extends NextFTCOpMode {
                 SubIntake.INSTANCE.KickUp,
                 new Delay(0.2),
                 new FollowPath(grabPickup1),
-                new Delay(0.5),
+                new Delay(0.3),
                 new FollowPath(OpenGate),
                 new Delay(0.2),
                 new FollowPath(scorePickup1).and(SubIntake.INSTANCE.StopIntake),
@@ -123,13 +125,13 @@ public class AutonomousProgram extends NextFTCOpMode {
                 SubIntake.INSTANCE.KickUp,
                 new Delay(0.2),
                 new FollowPath(grabPickup2),
-                new Delay(0.5),
+                new Delay(0.3),
                 new FollowPath(scorePickup2).and(SubIntake.INSTANCE.StopIntake),
                 SubIntake.INSTANCE.HoldIntake.and(SubIntake.INSTANCE.KickDown),
                 new Delay(1.8),
                 SubIntake.INSTANCE.KickUp,
                 new FollowPath(grabPickup3),
-                new Delay(0.7),
+                new Delay(0.3),
                 new FollowPath(scorePickup3).and(SubIntake.INSTANCE.StopIntake),
                 SubIntake.INSTANCE.KickDown.and(SubIntake.INSTANCE.HoldIntake),
                 new Delay(1.8),

@@ -27,7 +27,7 @@ public class SubTurret implements Subsystem {
     // turns 90 degrees to the right
     public Command TestRun3 = new RunToPosition(aimer, -21.7).requires(this);
     public Command AutonAim = new RunToPosition(aimer, 155).requires(this);
-    public Command RedAutonAim = new RunToPosition(aimer, 52).requires(this);
+    public Command RedAutonAim = new RunToPosition(aimer, -155).requires(this);
     public Command AutonAimFar = new RunToPosition(aimer, 140).requires(this);
     public Command AutonFarAim1 = new RunToPosition(aimer, 143).requires(this);
 
