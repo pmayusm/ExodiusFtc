@@ -50,7 +50,7 @@ public class NextTeleRed extends NextFTCOpMode {
     private List<Integer> routine;
 
     public static Pose startingPose = new Pose(8, 8, Math.toRadians(0));
-    public static Pose BLUEGOAL = new Pose(143, 144, Math.toRadians(0));
+    public static Pose BLUEGOAL = new Pose(136, 139, Math.toRadians(0));
     public double DISTANCETOBLUEGOAL;
     public double turnage;
     double botposeY;

@@ -6,6 +6,9 @@ import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
+import com.pedropathing.paths.PathBuilder;
+import com.pedropathing.paths.PathChain;
+import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -43,17 +46,24 @@ public class FarAutoBlue extends NextFTCOpMode {
     public final Pose FirstIntake = new Pose(10, 10, Math.toRadians(210));
     public final Pose ScorePoseFar = new Pose(50, 12, Math.toRadians(180));
     private final Pose IntakeStack = new Pose(10, 35, Math.toRadians(180));
-    private Path grabPickup1;
+    private PathChain grabPickup1;
     private Path hesiPickup;
     private Path scorePickup1;
     private Path grabPickup2;
     private Path grabStack;
     private Path scoreStack;
+    private Path scoreFar;
 
     public void buildPaths(){
 
-        grabPickup1 = new Path(new BezierLine(startPose, FirstIntake));
-        grabPickup1.setLinearHeadingInterpolation(startPose.getHeading(), FirstIntake.getHeading());
+        grabPickup1 = PedroComponent.follower().pathBuilder()
+                .addPath(new BezierLine(startPose, FirstIntake))
+                .setLinearHeadingInterpolation(startPose.getHeading(), FirstIntake.getHeading())
+                .setTimeoutConstraint(250)
+                .build();
+
+        scoreFar = new Path(new BezierLine(startPose, ScorePoseFar));
+        scoreFar.setLinearHeadingInterpolation(startPose.getHeading(), ScorePoseFar.getHeading());
 
         hesiPickup = new Path(new BezierCurve(FirstIntake, new Pose(45, 8.5), FirstIntake));
         hesiPickup.setLinearHeadingInterpolation(FirstIntake.getHeading(), FirstIntake.getHeading());
@@ -64,18 +74,19 @@ public class FarAutoBlue extends NextFTCOpMode {
         grabStack = new Path(new BezierCurve(ScorePoseFar, new Pose(52, 42), IntakeStack));
         grabStack.setLinearHeadingInterpolation(ScorePoseFar.getHeading(), IntakeStack.getHeading());
 
+
         scoreStack = new Path(new BezierLine(IntakeStack, ScorePoseFar));
         scoreStack.setLinearHeadingInterpolation(IntakeStack.getHeading(), ScorePoseFar.getHeading());
     }
     private Command autonomousRoutine(){
         return new SequentialGroup(
-            SubTurret.INSTANCE.AutonFarAim1,
+            SubTurret.INSTANCE.AutonAimFar.and(new FollowPath(scoreFar)),
             new Delay(2.5),
             SubIntake.INSTANCE.HoldIntake.and(SubIntake.INSTANCE.KickDown),
             new Delay(2),
             SubIntake.INSTANCE.KickUp,
             new Delay(0.3),
-            new FollowPath(grabStack).and(SubTurret.INSTANCE.AutonAimFar),
+            new FollowPath(grabStack),
             new Delay(0.3),
             new FollowPath(scoreStack),
             new Delay(0.2),
@@ -125,9 +136,14 @@ public class FarAutoBlue extends NextFTCOpMode {
         PedroComponent.follower().setPose(startPose);
         Initialize().schedule();
     }
+    @Override
+    public void onWaitForStart() {
+        SubShoot.INSTANCE.setPIDTRUE(false);
+    }
 
     @Override
     public void onStartButtonPressed() {
+        SubShoot.INSTANCE.setPIDTRUE(true);
         buildPaths();
         PedroComponent.follower().update();
         autonomousRoutine().schedule();

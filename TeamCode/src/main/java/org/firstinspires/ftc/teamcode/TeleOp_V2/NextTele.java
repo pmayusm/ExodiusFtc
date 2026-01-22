@@ -172,10 +172,10 @@ public class NextTele extends NextFTCOpMode {
         SubTurret.INSTANCE.setTarget(turnage);
         DISTANCETOBLUEGOAL = PedroComponent.follower().getPose().distanceFrom(BLUEGOAL);
         telemetry.addData("TurretPos", SubTurret.INSTANCE.getPosition());
-        telemetry.addData("flywheelvel", SubShoot.INSTANCE.getvel());
         telemetry.addData("Robot Pose", PedroComponent.follower().getPose());
         telemetry.addData("CorrectTurningAngle", CorrectTurning);
         telemetry.addData("targ vel", SubShoot.INSTANCE.getTargetvelocity());
+        telemetry.addData("flywheelvel", SubShoot.INSTANCE.getvel());
 
         // shooter vel :y = 0.000140673x^3 - 0.0615182x^2 + 12.28422x + 469.8692
         // hood pos: y = -0.00000594867x^3 + 0.00178147x^2 - 0.172839x + 5.77029
