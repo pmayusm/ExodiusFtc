@@ -46,6 +46,7 @@ public class FarAutoBlue extends NextFTCOpMode {
     public final Pose FirstIntake = new Pose(10, 10, Math.toRadians(210));
     public final Pose ScorePoseFar = new Pose(50, 12, Math.toRadians(180));
     private final Pose IntakeStack = new Pose(10, 35, Math.toRadians(180));
+    private final Pose parkPose = new Pose(40, 20, Math.toRadians(180));
     private PathChain grabPickup1;
     private Path hesiPickup;
     private Path scorePickup1;
@@ -53,6 +54,7 @@ public class FarAutoBlue extends NextFTCOpMode {
     private Path grabStack;
     private Path scoreStack;
     private Path scoreFar;
+    private Path park;
 
     public void buildPaths(){
 
@@ -77,6 +79,9 @@ public class FarAutoBlue extends NextFTCOpMode {
 
         scoreStack = new Path(new BezierLine(IntakeStack, ScorePoseFar));
         scoreStack.setLinearHeadingInterpolation(IntakeStack.getHeading(), ScorePoseFar.getHeading());
+
+        park = new Path(new BezierLine(FirstIntake, parkPose));
+        park.setLinearHeadingInterpolation(FirstIntake.getHeading(), parkPose.getHeading());
     }
     private Command autonomousRoutine(){
         return new SequentialGroup(
@@ -114,11 +119,7 @@ public class FarAutoBlue extends NextFTCOpMode {
             // go back again
             new FollowPath(grabPickup1),
             //new Delay(0.5),
-            new FollowPath(scorePickup1),
-            new Delay(0.2),
-            SubIntake.INSTANCE.KickDown,
-            new Delay(2),
-            SubIntake.INSTANCE.KickUp
+            new FollowPath(park).and(SubIntake.INSTANCE.StopIntake)
         );
     }
     private Command Initialize(){

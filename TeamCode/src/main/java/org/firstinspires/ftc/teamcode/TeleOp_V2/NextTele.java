@@ -159,8 +159,15 @@ public class NextTele extends NextFTCOpMode {
             SubShoot.INSTANCE.setPIDTRUE(false);
         }
 
-        double dx = BLUEGOAL.getX() - PedroComponent.follower().getPose().getX();
-        double dy = BLUEGOAL.getY() - PedroComponent.follower().getPose().getY();
+        double Offset_x = 5 * Math.cos(Math.toDegrees(PedroComponent.follower().getHeading()));
+        double Offset_y = 5 * Math.sin(Math.toDegrees(PedroComponent.follower().getHeading()));
+        double TurretPosX = PedroComponent.follower().getPose().getX() + Offset_x;
+        double TurretPosY = PedroComponent.follower().getPose().getY() + Offset_y;
+
+//        double dx = BLUEGOAL.getX() - PedroComponent.follower().getPose().getX();
+//        double dy = BLUEGOAL.getY() - PedroComponent.follower().getPose().getY();
+        double dx = BLUEGOAL.getX() + TurretPosX;
+        double dy = BLUEGOAL.getY() + TurretPosY;
         double fieldAngleToGoal = Math.toDegrees(Math.atan2(dy, dx));
         double robotHeading = Math.toDegrees(PedroComponent.follower().getHeading());
         double turretTargetAngle = fieldAngleToGoal - robotHeading;
@@ -176,6 +183,10 @@ public class NextTele extends NextFTCOpMode {
         telemetry.addData("CorrectTurningAngle", CorrectTurning);
         telemetry.addData("targ vel", SubShoot.INSTANCE.getTargetvelocity());
         telemetry.addData("flywheelvel", SubShoot.INSTANCE.getvel());
+        telemetry.addData("Offset y", Offset_y);
+        telemetry.addData("Offset x", Offset_x);
+        telemetry.addData("Turret 2d posX", TurretPosX);
+        telemetry.addData("Turret 2d posY", TurretPosY);
 
         // shooter vel :y = 0.000140673x^3 - 0.0615182x^2 + 12.28422x + 469.8692
         // hood pos: y = -0.00000594867x^3 + 0.00178147x^2 - 0.172839x + 5.77029
@@ -220,6 +231,7 @@ public class NextTele extends NextFTCOpMode {
             PedroComponent.follower().setPose(getRobotPoseFromCamera());
         }
 
+
     }
     private Pose getRobotPoseFromCamera(){
         return new Pose(botposeX, botposeY, Math.toRadians(botposeHeading));
@@ -232,5 +244,7 @@ public class NextTele extends NextFTCOpMode {
         while (angle < -180) angle += 360;
         return angle;
     }
+
+
 
 }
