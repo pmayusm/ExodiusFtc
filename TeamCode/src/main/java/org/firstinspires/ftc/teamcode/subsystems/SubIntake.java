@@ -18,6 +18,7 @@ public class SubIntake implements Subsystem {
     public static final SubIntake INSTANCE = new SubIntake();
     private SubIntake(){}
     private MotorEx IntakeMotor = new MotorEx("I");
+
     //384.5 encoder ticks per revolution
     //2787.625 max tps
     // max speed probably around 2500

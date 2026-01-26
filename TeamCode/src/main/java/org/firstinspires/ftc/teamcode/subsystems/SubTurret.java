@@ -18,8 +18,8 @@ public class SubTurret implements Subsystem {
     //145.1 ticks per revolution
     // 3.1 : 1 gear ratio
     private ControlSystem aimer = ControlSystem.builder()
-            .posPid(0.03, 0, 0.001)
-            .basicFF(0, 0.006, 0.02)
+            .posPid(0.24, 0, 0.002)
+            .basicFF(0.01, 0, 0.02)
             .build();
 
     public Command TestRun = new RunToPosition(aimer, 0, 1).requires(this);
@@ -27,7 +27,8 @@ public class SubTurret implements Subsystem {
     // turns 90 degrees to the right
     public Command TestRun3 = new RunToPosition(aimer, -21.7).requires(this);
     public Command AutonAim = new RunToPosition(aimer, 155).requires(this);
-    public Command RedAutonAim = new RunToPosition(aimer, -155).requires(this);
+    public Command RedAutonAim = new RunToPosition(aimer, -158).requires(this);
+    public Command RedAutonFarAim = new RunToPosition(aimer, -135).requires(this);
     public Command AutonAimFar = new RunToPosition(aimer, 140).requires(this);
     public Command AutonFarAim1 = new RunToPosition(aimer, 143).requires(this);
 

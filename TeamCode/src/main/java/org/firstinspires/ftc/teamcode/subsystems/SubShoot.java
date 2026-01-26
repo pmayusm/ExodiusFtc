@@ -49,7 +49,7 @@ public class SubShoot implements Subsystem {
     public Command ReverseShoot2 = new SetPower(shooterMotor2, -1).requires(this);
     public Command AutoCloseShoot = new SetPower(shooterMotor, 0.83).requires(this);
     public Command AutoCloseShoot2 = new SetPower(shooterMotor2, 0.98).requires(this);
-    public Command PIDshot = new RunToVelocity(controlSystem, 1120, 30).requires(this);
+    public Command PIDshot = new RunToVelocity(controlSystem, 1100, 30).requires(this);
     public Command PIDfarShot = new RunToVelocity(controlSystem, 1400, 30).requires(this);
 
     public Command PIDstop = new RunToVelocity(controlSystem, 0, 2000).requires(this);

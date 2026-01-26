@@ -59,7 +59,7 @@ public class AutonomousProgramRed extends NextFTCOpMode {
     private final Pose startPose = new Pose(123, 123.5, Math.toRadians(305)); //starting pose
     private final Pose ScorePoseBigTriangle = new Pose(89, 90, Math.toRadians(343)); //first scoring spot at the big triangle
     private final Pose FirstIntake = new Pose(124, 82, Math.toRadians(0)); //Ending spot of first stack intake
-    private final Pose Gate = new Pose(129, 75, Math.toRadians(0));  // Spot to open the gate
+    private final Pose Gate = new Pose(126, 75, Math.toRadians(0));  // Spot to open the gate
     private final Pose SecondIntake = new Pose(134, 59, Math.toRadians(0)); //Ending spot of second stack intake
     private final Pose ThirdIntake = new Pose(134, 35, Math.toRadians(0));
     private final Pose ParkPose = new Pose(117, 75, Math.toRadians(270)); //Parking spot at the end of Auto

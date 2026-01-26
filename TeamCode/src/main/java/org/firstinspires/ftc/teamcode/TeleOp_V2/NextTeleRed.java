@@ -29,7 +29,7 @@ import dev.nextftc.hardware.driving.DriverControlledCommand;
 import dev.nextftc.hardware.impl.ServoEx;
 
 
-@TeleOp(name = "Teleop Red")
+@TeleOp(name = "NextFTC TeleOp Red")
 public class NextTeleRed extends NextFTCOpMode {
     public NextTeleRed() {
         addComponents(
@@ -49,7 +49,7 @@ public class NextTeleRed extends NextFTCOpMode {
     private LimelightSubsystem limelight;
     private List<Integer> routine;
 
-    public static Pose startingPose = new Pose(8, 8, Math.toRadians(0));
+    public static Pose startingPose = new Pose(6, 8, Math.toRadians(0));
     public static Pose BLUEGOAL = new Pose(136, 139, Math.toRadians(0));
     public double DISTANCETOBLUEGOAL;
     public double turnage;
@@ -95,6 +95,7 @@ public class NextTeleRed extends NextFTCOpMode {
         PedroComponent.follower().setStartingPose(startingPose);
         telemetry.addData("pos", SubTurret.INSTANCE.getPosition());
         telemetry.update();
+        SubIntake.INSTANCE.KickUp.schedule();
     }
     @Override
     public void onWaitForStart(){
@@ -127,12 +128,7 @@ public class NextTeleRed extends NextFTCOpMode {
         Gamepads.gamepad1().leftTrigger().greaterThan(0.2)
                 .whenBecomesTrue(SubIntake.INSTANCE.ReverseIntake)
                 .whenBecomesFalse(SubIntake.INSTANCE.StopIntake);
-        Gamepads.gamepad1().leftBumper()
-                .whenBecomesTrue(
-                        SubIntake.INSTANCE.KickMiddle
-                );
-        Gamepads.gamepad1().x()
-                .whenBecomesTrue(SubShoot.INSTANCE.hood1);
+
     }
     @Override
     public void onUpdate(){
@@ -159,8 +155,15 @@ public class NextTeleRed extends NextFTCOpMode {
             SubShoot.INSTANCE.setPIDTRUE(false);
         }
 
-        double dx = BLUEGOAL.getX() - PedroComponent.follower().getPose().getX();
-        double dy = BLUEGOAL.getY() - PedroComponent.follower().getPose().getY();
+        double Offset_x = -3 * Math.cos(PedroComponent.follower().getHeading());
+        double Offset_y = -3 * Math.sin(PedroComponent.follower().getHeading());
+        double TurretPosX = PedroComponent.follower().getPose().getX() + Offset_x;
+        double TurretPosY = PedroComponent.follower().getPose().getY() + Offset_y;
+
+//        double dx = BLUEGOAL.getX() - PedroComponent.follower().getPose().getX();
+//        double dy = BLUEGOAL.getY() - PedroComponent.follower().getPose().getY();
+        double dx = BLUEGOAL.getX() - TurretPosX;
+        double dy = BLUEGOAL.getY() - TurretPosY;
         double fieldAngleToGoal = Math.toDegrees(Math.atan2(dy, dx));
         double robotHeading = Math.toDegrees(PedroComponent.follower().getHeading());
         double turretTargetAngle = fieldAngleToGoal - robotHeading;
@@ -172,15 +175,23 @@ public class NextTeleRed extends NextFTCOpMode {
         SubTurret.INSTANCE.setTarget(turnage);
         DISTANCETOBLUEGOAL = PedroComponent.follower().getPose().distanceFrom(BLUEGOAL);
         telemetry.addData("TurretPos", SubTurret.INSTANCE.getPosition());
-        telemetry.addData("flywheelvel", SubShoot.INSTANCE.getvel());
         telemetry.addData("Robot Pose", PedroComponent.follower().getPose());
         telemetry.addData("CorrectTurningAngle", CorrectTurning);
         telemetry.addData("targ vel", SubShoot.INSTANCE.getTargetvelocity());
+        telemetry.addData("flywheelvel", SubShoot.INSTANCE.getvel());
+        telemetry.addData("Offset y", Offset_y);
+        telemetry.addData("Offset x", Offset_x);
+        telemetry.addData("Turret 2d posX", TurretPosX);
+        telemetry.addData("Turret 2d posY", TurretPosY);
 
-        // shooter vel :y = 0.000140673x^3 - 0.0615182x^2 + 12.28422x + 469.8692
-        // hood pos: y = -0.00000594867x^3 + 0.00178147x^2 - 0.172839x + 5.77029
-        shootertune = 0.000140673 * Math.pow(DISTANCETOBLUEGOAL, 3) - 0.0615182 * Math.pow(DISTANCETOBLUEGOAL, 2) + 12.28422 * DISTANCETOBLUEGOAL + 429.8692;
-        HoodTune = -0.00000594867 * Math.pow(DISTANCETOBLUEGOAL, 3) + 0.00178147 * Math.pow(DISTANCETOBLUEGOAL, 2) - 0.172839 * DISTANCETOBLUEGOAL+ 5.77029;
+
+        //shooter vel : y = -0.00000566826x^{4}+0.00261338x^{3}-0.425741x^{2}+33.27585x+81.24922
+        if (DISTANCETOBLUEGOAL <= 60.00){
+            HoodTune = 0.7;
+        }else {
+            HoodTune = 0.35;
+        }
+        shootertune = -0.00000566826 * Math.pow(DISTANCETOBLUEGOAL, 4) + 0.00261338 * Math.pow(DISTANCETOBLUEGOAL, 3) - 0.425741 * Math.pow(DISTANCETOBLUEGOAL, 2) + 33.27585 * DISTANCETOBLUEGOAL + 81.24922;
         SubShoot.INSTANCE.setTargetvelocity(shootertune);
         SubShoot.INSTANCE.sethoodtune(HoodTune);
         SubShoot.INSTANCE.HoodInterpolation().schedule();
@@ -220,6 +231,7 @@ public class NextTeleRed extends NextFTCOpMode {
             PedroComponent.follower().setPose(getRobotPoseFromCamera());
         }
 
+
     }
     private Pose getRobotPoseFromCamera(){
         return new Pose(botposeX, botposeY, Math.toRadians(botposeHeading));
@@ -232,5 +244,7 @@ public class NextTeleRed extends NextFTCOpMode {
         while (angle < -180) angle += 360;
         return angle;
     }
+
+
 
 }
